@@ -73,12 +73,12 @@ const LuckyWheel = () => {
 
   // تعريف الكوبونات الافتراضية
   const initialSegments = [
-    { id: 1, text: "خصم 10%", value: "10% OFF", color: "#3B82F6", type: "prize", couponCodes: [] },
-    { id: 2, text: "شحن مجاني", value: "FREE SHIP", color: "#10B981", type: "prize", couponCodes: [] },
-    { id: 3, text: "حظ أوفر", value: "HARD LUCK", color: "#475569", type: "luck", couponCodes: [] },
-    { id: 4, text: "خصم 50%", value: "50% OFF", color: "#8B5CF6", type: "prize", couponCodes: [] },
-    { id: 5, text: "خصم 70%", value: "70% OFF", color: "#F59E0B", type: "prize", couponCodes: [] },
-    { id: 6, text: "خصم 100%", value: "100% OFF", color: "#EF4444", type: "prize", couponCodes: [] },
+    { id: 1, text: "خصم 10%", value: "10% OFF", color: "#3B82F6", type: "prize", couponCodes: [], probability: 30 },
+    { id: 2, text: "شحن مجاني", value: "FREE SHIP", color: "#10B981", type: "prize", couponCodes: [], probability: 25 },
+    { id: 3, text: "حظ أوفر", value: "HARD LUCK", color: "#475569", type: "luck", couponCodes: [], probability: 20 },
+    { id: 4, text: "خصم 50%", value: "50% OFF", color: "#8B5CF6", type: "prize", couponCodes: [], probability: 15 },
+    { id: 5, text: "خصم 70%", value: "70% OFF", color: "#F59E0B", type: "prize", couponCodes: [], probability: 7 },
+    { id: 6, text: "خصم 100%", value: "100% OFF", color: "#EF4444", type: "prize", couponCodes: [], probability: 3 },
   ];
 
   const [segments, setSegments] = useState(initialSegments);
@@ -166,6 +166,29 @@ const LuckyWheel = () => {
     ].join(" ");
   };
 
+  // دالة اختيار جائزة بناءً على الأوزان (الاحتمالات)
+  const selectWeightedSegment = (availableSegmentIds) => {
+    const availableSegments = segments.filter(s => availableSegmentIds.includes(s.id));
+    
+    // حساب مجموع الأوزان
+    const totalWeight = availableSegments.reduce((sum, seg) => sum + (seg.probability || 10), 0);
+    
+    // اختيار رقم عشوائي بين 0 ومجموع الأوزان
+    let random = Math.random() * totalWeight;
+    
+    // البحث عن الجائزة المناسبة بناءً على الوزن
+    for (const segment of availableSegments) {
+      const weight = segment.probability || 10;
+      if (random < weight) {
+        return segment.id;
+      }
+      random -= weight;
+    }
+    
+    // في حالة الخطأ، نعيد الجائزة الأخيرة
+    return availableSegments[availableSegments.length - 1].id;
+  };
+
   // دالة Gemini الآن تستخدم فقط إذا لم يكن هناك كوبونات مخزنة مسبقاً
   const generateGeminiContent = async (prizeText, prizeType) => {
     if (prizeType === 'luck') return null;
@@ -223,8 +246,8 @@ const LuckyWheel = () => {
     setAiContent(null);
     setShowConfetti(false);
 
-    const randomIndex = Math.floor(Math.random() * availableIds.length);
-    const winningId = availableIds[randomIndex];
+    // استخدام نظام الأوزان لاختيار الجائزة
+    const winningId = selectWeightedSegment(availableIds);
     const winningSegment = segments.find(s => s.id === winningId);
     
     // --- منطق سحب الكوبون ---
@@ -392,7 +415,7 @@ const LuckyWheel = () => {
 
   const handleAddSegment = () => {
       const newId = tempSegments.length > 0 ? Math.max(...tempSegments.map(s => s.id)) + 1 : 1;
-      setTempSegments([...tempSegments, { id: newId, text: "جائزة جديدة", value: "NEW", color: "#3B82F6", type: "prize", couponCodes: [] }]);
+      setTempSegments([...tempSegments, { id: newId, text: "جائزة جديدة", value: "NEW", color: "#3B82F6", type: "prize", couponCodes: [], probability: 10 }]);
   };
 
   const handleDeleteSegment = (id) => {
@@ -487,6 +510,19 @@ const LuckyWheel = () => {
                                       <Edit3 className="text-blue-600" /> إدارة الكوبونات والجوائز
                                   </h2>
                                   <p className="text-sm text-slate-500">قم بتعديل الجوائز وإدخال الكوبونات (يمكنك إدخال حتى 100+ كوبون لكل جائزة)</p>
+                                  <div className="mt-2 flex items-center gap-2">
+                                      <span className="text-xs font-bold text-slate-600">إجمالي النسب:</span>
+                                      <span className={`text-xs font-bold px-2 py-1 rounded ${
+                                          tempSegments.reduce((sum, s) => sum + (s.probability || 10), 0) === 100 
+                                          ? 'bg-green-100 text-green-700' 
+                                          : 'bg-yellow-100 text-yellow-700'
+                                      }`}>
+                                          {tempSegments.reduce((sum, s) => sum + (s.probability || 10), 0)}%
+                                      </span>
+                                      {tempSegments.reduce((sum, s) => sum + (s.probability || 10), 0) !== 100 && (
+                                          <span className="text-xs text-yellow-600">⚠️ النسب لا تساوي 100%</span>
+                                      )}
+                                  </div>
                               </div>
                               <button 
                                   onClick={handleSaveDashboard}
@@ -533,7 +569,7 @@ const LuckyWheel = () => {
                                               {index + 1}
                                           </div>
                                           
-                                          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+                                          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 w-full">
                                               <div className="flex flex-col gap-1">
                                                   <label className="text-xs font-bold text-slate-400">اسم الجائزة (عربي)</label>
                                                   <input 
@@ -575,6 +611,33 @@ const LuckyWheel = () => {
                                                       className="border border-slate-300 rounded px-2 py-1.5 focus:border-blue-500 outline-none w-full font-mono text-sm"
                                                       dir="ltr"
                                                   />
+                                              </div>
+                                              <div className="flex flex-col gap-1">
+                                                  <label className="text-xs font-bold text-slate-400 flex items-center gap-1">
+                                                      نسبة الظهور (%)
+                                                      <span className="text-[10px] text-slate-400 font-normal">
+                                                          ({seg.probability || 10})
+                                                      </span>
+                                                  </label>
+                                                  <input 
+                                                      type="number" 
+                                                      min="0" 
+                                                      max="100" 
+                                                      step="1"
+                                                      value={seg.probability || 10} 
+                                                      onChange={(e) => {
+                                                          const val = Math.max(0, Math.min(100, parseInt(e.target.value) || 0));
+                                                          handleSegmentChange(index, 'probability', val);
+                                                      }}
+                                                      className="border border-slate-300 rounded px-2 py-1.5 focus:border-blue-500 outline-none w-full font-mono text-sm"
+                                                      dir="ltr"
+                                                  />
+                                                  <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1">
+                                                      <div 
+                                                          className="bg-blue-500 h-1.5 rounded-full transition-all"
+                                                          style={{ width: `${Math.min(100, (seg.probability || 10))}%` }}
+                                                      ></div>
+                                                  </div>
                                               </div>
                                           </div>
 
