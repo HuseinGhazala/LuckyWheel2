@@ -996,7 +996,7 @@ const LuckyWheel = () => {
           </div>
       )}
 
-      <div className={`flex flex-col lg:flex-row items-center gap-12 w-full max-w-6xl relative z-10 transition-all duration-500 ${showRegistrationModal || showDashboard ? 'opacity-40 blur-sm pointer-events-none' : 'opacity-100'}`}>
+      <div className={`flex flex-col justify-center lg:flex-row items-center gap-12 w-full max-w-6xl relative z-10 transition-all duration-500 ${showRegistrationModal || showDashboard ? 'opacity-40 blur-sm pointer-events-none' : 'opacity-100'}`}>
         
         {/* === Wheel Section === */}
         <div className="relative group perspective-1000 transform hover:scale-[1.02] transition-transform duration-500">
