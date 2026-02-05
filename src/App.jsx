@@ -129,57 +129,61 @@ const LuckyWheel = () => {
   const loadSettingsFromCloud = async () => {
     try {
       const scriptUrl = googleScriptUrl || DEFAULT_SCRIPT_URL;
-      const url = `${scriptUrl}?action=getSettings&t=${Date.now()}`; // إضافة timestamp لتجنب الـ cache
+      if (!scriptUrl || scriptUrl === DEFAULT_SCRIPT_URL) {
+        console.warn('⚠️ رابط Google Script غير محدد، استخدام البيانات المحلية');
+        return loadSettingsFromStorage();
+      }
       
-      // Google Apps Script يدعم CORS تلقائياً عند النشر كـ Web App
+      const url = `${scriptUrl}?action=getSettings&t=${Date.now()}`; // إضافة timestamp لتجنب الـ cache
+      console.log('🔄 جاري تحميل البيانات من:', url);
+      
+      // استخدام fetch مع CORS (Google Apps Script يدعم CORS عند النشر بشكل صحيح)
       const response = await fetch(url, {
         method: 'GET',
-        mode: 'no-cors', // استخدام no-cors لأن Google Script يدعم CORS تلقائياً
-        cache: 'no-cache'
+        mode: 'cors', // استخدام cors لأن Google Script منشور بشكل صحيح
+        cache: 'no-cache',
+        headers: {
+          'Accept': 'application/json'
+        }
       });
       
-      // مع no-cors لا يمكننا قراءة الـ response مباشرة
-      // لذلك سنستخدم طريقة بديلة: JSONP أو proxy
-      // لكن الأفضل هو استخدام طريقة أخرى
+      console.log('📡 حالة الاستجابة:', response.status, response.statusText);
       
-      // محاولة استخدام fetch عادي (قد يعمل إذا كان CORS مفعّل)
-      try {
-        const corsResponse = await fetch(url, {
-          method: 'GET',
-          cache: 'no-cache'
-        });
+      if (response.ok) {
+        const text = await response.text();
+        console.log('📄 البيانات المستلمة:', text.substring(0, 200)); // طباعة أول 200 حرف للتحقق
         
-        if (corsResponse.ok) {
-          const text = await corsResponse.text();
-          let data;
-          try {
-            data = JSON.parse(text);
-          } catch (e) {
-            console.error('Error parsing JSON:', e, text);
-            return null;
-          }
-          
-          if (data.success && data.settings) {
-            console.log('✅ تم تحميل البيانات من السحابة:', data.settings);
-            return data.settings;
-          } else {
-            console.warn('⚠️ البيانات غير موجودة في السحابة:', data);
-          }
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.error('❌ خطأ في تحليل JSON:', e, 'النص:', text);
+          return loadSettingsFromStorage();
         }
-      } catch (corsError) {
-        console.warn('⚠️ CORS error, trying alternative method:', corsError);
-        // إذا فشل CORS، نستخدم البيانات المحلية
+        
+        if (data.success && data.settings) {
+          console.log('✅ تم تحميل البيانات من السحابة بنجاح!');
+          console.log('📊 عدد الجوائز:', data.settings.segments?.length || 0);
+          return data.settings;
+        } else {
+          console.warn('⚠️ البيانات غير موجودة في السحابة:', data);
+          return loadSettingsFromStorage();
+        }
+      } else {
+        console.error('❌ خطأ في الاستجابة:', response.status, response.statusText);
+        return loadSettingsFromStorage();
       }
       
     } catch (error) {
       console.error('❌ خطأ في تحميل البيانات من السحابة:', error);
-    }
-    
-    // استخدام localStorage كبديل عند الفشل
-    const localData = loadSettingsFromStorage();
-    if (localData) {
-      console.log('📦 استخدام البيانات المحلية كبديل');
-      return localData;
+      console.error('تفاصيل الخطأ:', error.message);
+      
+      // استخدام localStorage كبديل عند الفشل
+      const localData = loadSettingsFromStorage();
+      if (localData) {
+        console.log('📦 استخدام البيانات المحلية كبديل');
+        return localData;
+      }
     }
     
     return null;
@@ -328,12 +332,17 @@ const LuckyWheel = () => {
   useEffect(() => {
     const loadCloudSettings = async () => {
       setIsLoadingSettings(true);
+      console.log('🚀 بدء تحميل الإعدادات من السحابة...');
+      
       try {
         const cloudSettings = await loadSettingsFromCloud();
-        if (cloudSettings) {
+        
+        if (cloudSettings && cloudSettings.segments) {
+          console.log('✅ تم تحميل البيانات من السحابة، عدد الجوائز:', cloudSettings.segments.length);
+          
           // تحديث جميع الحالات بالبيانات من السحابة
-          setSegments(cloudSettings.segments || initialSegments);
-          setAvailableIds((cloudSettings.segments || initialSegments).map(s => s.id));
+          setSegments(cloudSettings.segments);
+          setAvailableIds(cloudSettings.segments.map(s => s.id));
           setMaxSpins(cloudSettings.maxSpins || 1);
           setRemainingSpins(cloudSettings.maxSpins || 1);
           setStoreLogo(cloudSettings.logo || null);
@@ -355,19 +364,21 @@ const LuckyWheel = () => {
           setLoseSound(cloudSettings.loseSound || "https://www.soundjay.com/misc/sounds/fail-trombone-01.mp3");
           
           // حفظ في localStorage كنسخة احتياطية
-          localStorage.setItem('wheelSegments', JSON.stringify(cloudSettings.segments || initialSegments));
+          localStorage.setItem('wheelSegments', JSON.stringify(cloudSettings.segments));
           localStorage.setItem('maxSpins', (cloudSettings.maxSpins || 1).toString());
           if (cloudSettings.logo) {
             localStorage.setItem('storeLogo', cloudSettings.logo);
+          } else {
+            localStorage.removeItem('storeLogo');
           }
           localStorage.setItem('socialLinks', JSON.stringify(cloudSettings.socialLinks || {}));
           localStorage.setItem('backgroundSettings', JSON.stringify(cloudSettings.backgroundSettings || {}));
           localStorage.setItem('winSound', cloudSettings.winSound || "");
           localStorage.setItem('loseSound', cloudSettings.loseSound || "");
           
-          console.log('✅ تم تحديث جميع الإعدادات من السحابة');
+          console.log('✅ تم تحديث جميع الإعدادات من السحابة بنجاح!');
         } else {
-          console.warn('⚠️ لم يتم العثور على بيانات في السحابة، استخدام القيم الافتراضية');
+          console.warn('⚠️ لم يتم العثور على بيانات في السحابة، استخدام البيانات المحلية');
           // استخدام البيانات المحلية إذا كانت موجودة
           const localData = loadSettingsFromStorage();
           if (localData) {
