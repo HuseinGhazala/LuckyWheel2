@@ -193,43 +193,52 @@ const LuckyWheel = () => {
     return null;
   };
 
-  // دالة لحفظ البيانات في السحابة (Supabase أو Google Sheets)
+  // دالة لحفظ البيانات في السحابة (Supabase و Google Sheets معاً)
   const saveSettingsToCloud = async (settings) => {
+    let supabaseSaved = false;
+    let googleSheetsSaved = false;
+    
     try {
-      // محاولة الحفظ في Supabase أولاً
+      // حفظ في Supabase
       const useSupabase = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_URL !== 'YOUR_SUPABASE_URL';
       
       if (useSupabase) {
         console.log('💾 جاري حفظ البيانات في Supabase...');
-        const saved = await saveSupabaseSettings(settings);
-        if (saved) {
+        supabaseSaved = await saveSupabaseSettings(settings);
+        if (supabaseSaved) {
           console.log('✅ تم حفظ البيانات في Supabase بنجاح!');
-          return true;
+        } else {
+          console.warn('⚠️ فشل حفظ البيانات في Supabase');
         }
-        console.warn('⚠️ فشل حفظ البيانات في Supabase، جاري المحاولة في Google Sheets...');
       }
       
-      // إذا فشل Supabase أو لم يكن مفعّل، جرب Google Sheets
+      // حفظ في Google Sheets أيضاً
       const scriptUrl = googleScriptUrl || DEFAULT_SCRIPT_URL;
       if (scriptUrl && scriptUrl.includes('script.google.com')) {
-        const formData = new FormData();
-        formData.append('action', 'saveSettings');
-        formData.append('settings', JSON.stringify(settings));
-        
-        await fetch(scriptUrl, {
-          method: 'POST',
-          body: formData,
-          mode: 'no-cors'
-        });
-        
-        console.log('✅ تم حفظ البيانات في Google Sheets');
-        return true;
+        console.log('💾 جاري حفظ البيانات في Google Sheets...');
+        try {
+          const formData = new FormData();
+          formData.append('action', 'saveSettings');
+          formData.append('settings', JSON.stringify(settings));
+          
+          await fetch(scriptUrl, {
+            method: 'POST',
+            body: formData,
+            mode: 'no-cors'
+          });
+          
+          googleSheetsSaved = true;
+          console.log('✅ تم حفظ البيانات في Google Sheets بنجاح!');
+        } catch (error) {
+          console.warn('⚠️ فشل حفظ البيانات في Google Sheets:', error);
+        }
       }
       
-      return false;
+      // إرجاع true إذا تم الحفظ في أي مكان على الأقل
+      return supabaseSaved || googleSheetsSaved;
     } catch (error) {
       console.error('❌ خطأ في حفظ البيانات في السحابة:', error);
-      return false;
+      return supabaseSaved || googleSheetsSaved;
     }
   };
 
@@ -624,7 +633,7 @@ const LuckyWheel = () => {
       if (winningSegment.type === 'prize') {
         setHistory(prev => [...prev, { ...winningSegment, wonCode: assignedCode }]);
         
-        // حفظ بيانات الجائزة الفائزة في Supabase أو Google Sheets
+        // حفظ بيانات الجائزة الفائزة في Supabase و Google Sheets معاً
         if (isRegistered && userData.name && userData.email && userData.phone) {
           const winData = {
             name: userData.name,
@@ -634,15 +643,21 @@ const LuckyWheel = () => {
             couponCode: assignedCode || aiContent?.code || 'N/A'
           };
           
-          // محاولة الحفظ في Supabase أولاً
+          // حفظ في Supabase
           const useSupabase = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_URL !== 'YOUR_SUPABASE_URL';
           
           if (useSupabase) {
-            saveSupabaseWinData(winData).catch(err => console.log('Error saving win data to Supabase:', err));
+            console.log('💾 جاري حفظ بيانات الجائزة في Supabase...');
+            saveSupabaseWinData(winData)
+              .then(saved => {
+                if (saved) console.log('✅ تم حفظ بيانات الجائزة في Supabase');
+              })
+              .catch(err => console.warn('⚠️ فشل حفظ في Supabase:', err));
           }
           
-          // إذا فشل Supabase أو لم يكن مفعّل، استخدم Google Sheets
+          // حفظ في Google Sheets أيضاً
           if (googleScriptUrl && googleScriptUrl.includes('script.google.com')) {
+            console.log('💾 جاري حفظ بيانات الجائزة في Google Sheets...');
             const winFormData = new FormData();
             winFormData.append('action', 'saveWin');
             winFormData.append('name', winData.name);
@@ -656,7 +671,9 @@ const LuckyWheel = () => {
               method: 'POST', 
               body: winFormData, 
               mode: 'no-cors' 
-            }).catch(err => console.log('Error saving win data to Google Sheets:', err));
+            })
+              .then(() => console.log('✅ تم حفظ بيانات الجائزة في Google Sheets'))
+              .catch(err => console.warn('⚠️ فشل حفظ في Google Sheets:', err));
           }
         }
       }
@@ -708,26 +725,37 @@ const LuckyWheel = () => {
     if (userData.name && userData.email && userData.phone) {
         setIsSubmitting(true);
         try {
-            // محاولة الحفظ في Supabase أولاً
+            // حفظ في Supabase و Google Sheets معاً
             const useSupabase = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_URL !== 'YOUR_SUPABASE_URL';
-            let saved = false;
             
+            // حفظ في Supabase
             if (useSupabase) {
-                saved = await saveSupabaseUserData({
+                console.log('💾 جاري حفظ بيانات المستخدم في Supabase...');
+                saveSupabaseUserData({
                     name: userData.name,
                     email: userData.email,
                     phone: userData.phone
-                });
+                }).then(saved => {
+                    if (saved) console.log('✅ تم حفظ بيانات المستخدم في Supabase');
+                }).catch(err => console.warn('⚠️ فشل حفظ في Supabase:', err));
             }
             
-            // إذا فشل Supabase أو لم يكن مفعّل، استخدم Google Sheets
-            if (!saved && googleScriptUrl && googleScriptUrl.includes('script.google.com')) {
+            // حفظ في Google Sheets أيضاً
+            if (googleScriptUrl && googleScriptUrl.includes('script.google.com')) {
+                console.log('💾 جاري حفظ بيانات المستخدم في Google Sheets...');
                 const formData = new FormData();
                 formData.append('name', userData.name);
                 formData.append('email', userData.email);
                 formData.append('phone', userData.phone);
                 formData.append('timestamp', new Date().toISOString());
-                await fetch(googleScriptUrl, { method: 'POST', body: formData, mode: 'no-cors' });
+                
+                fetch(googleScriptUrl, { 
+                    method: 'POST', 
+                    body: formData, 
+                    mode: 'no-cors' 
+                }).then(() => {
+                    console.log('✅ تم حفظ بيانات المستخدم في Google Sheets');
+                }).catch(err => console.warn('⚠️ فشل حفظ في Google Sheets:', err));
             }
             
             setIsRegistered(true);
