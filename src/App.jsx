@@ -1161,13 +1161,62 @@ const LuckyWheel = () => {
 
   // مؤشر التحميل أثناء جلب البيانات من السحابة
   if (isLoadingSettings) {
+    // محاولة جلب اللوجو من localStorage أو من البيانات المحملة
+    const loadingLogo = storeLogo || loadedSettings?.logo || localStorage.getItem('storeLogo');
+    
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 font-sans text-slate-100 bg-slate-900" dir="rtl">
-        <div className="text-center">
-          <Loader2 className="animate-spin mx-auto mb-4 text-blue-500" size={48} />
-          <p className="text-xl font-bold text-white">جاري تحميل الإعدادات من السحابة...</p>
-          <p className="text-sm text-slate-400 mt-2">يرجى الانتظار</p>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 font-sans text-slate-100 bg-slate-900" dir="rtl" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>
+        <div className="text-center animate-fade-in">
+          {loadingLogo ? (
+            <div className="relative inline-block">
+              {/* تأثير التوهج */}
+              <div className="absolute inset-0 bg-yellow-400 blur-3xl opacity-30 rounded-full animate-pulse"></div>
+              {/* اللوجو */}
+              <div className="relative z-10 animate-bounce">
+                <img 
+                  src={loadingLogo} 
+                  alt="Logo" 
+                  className="h-32 md:h-40 w-auto mx-auto object-contain drop-shadow-2xl"
+                  style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}
+                />
+              </div>
+              {/* مؤشر التحميل تحت اللوجو */}
+              <div className="mt-8 flex justify-center">
+                <div className="flex gap-2">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s', animationDuration: '1s' }}></div>
+                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s', animationDuration: '1s' }}></div>
+                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s', animationDuration: '1s' }}></div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center">
+              <Loader2 className="animate-spin mx-auto mb-4 text-blue-500" size={48} />
+              <p className="text-xl font-bold text-white">جاري تحميل الإعدادات من السحابة...</p>
+              <p className="text-sm text-slate-400 mt-2">يرجى الانتظار</p>
+            </div>
+          )}
         </div>
+        <style>{`
+          @keyframes pulse {
+            0%, 100% {
+              opacity: 1;
+              transform: scale(1);
+            }
+            50% {
+              opacity: 0.8;
+              transform: scale(1.05);
+            }
+          }
+          @keyframes bounce {
+            0%, 100% {
+              transform: translateY(0);
+            }
+            50% {
+              transform: translateY(-10px);
+            }
+          }
+        `}</style>
       </div>
     );
   }

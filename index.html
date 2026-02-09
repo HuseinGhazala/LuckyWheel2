@@ -127,16 +127,6 @@
           }
         }, 500);
         
-        // منع فتح Console عن طريق Override
-        const noop = function() {};
-        const methods = ['log', 'debug', 'info', 'warn', 'error', 'assert', 'dir', 'dirxml', 
-                        'group', 'groupEnd', 'time', 'timeEnd', 'count', 'trace', 'profile', 'profileEnd'];
-        methods.forEach(function(method) {
-          if (window.console && window.console[method]) {
-            window.console[method] = noop;
-          }
-        });
-        
         // منع فتح DevTools عن طريق Override
         Object.defineProperty(window, 'devtools', {
           get: function() {
