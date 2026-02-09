@@ -214,24 +214,34 @@ const LuckyWheel = () => {
       
       // حفظ في Google Sheets أيضاً
       const scriptUrl = googleScriptUrl || DEFAULT_SCRIPT_URL;
+      console.log('🔍 رابط Google Script:', scriptUrl);
+      
       if (scriptUrl && scriptUrl.includes('script.google.com')) {
         console.log('💾 جاري حفظ البيانات في Google Sheets...');
+        console.log('📊 البيانات المرسلة:', JSON.stringify(settings).substring(0, 200));
+        
         try {
           const formData = new FormData();
           formData.append('action', 'saveSettings');
           formData.append('settings', JSON.stringify(settings));
           
-          await fetch(scriptUrl, {
+          const response = await fetch(scriptUrl, {
             method: 'POST',
             body: formData,
             mode: 'no-cors'
           });
           
+          // مع no-cors لا يمكننا قراءة الـ response، لكن الطلب تم إرساله
           googleSheetsSaved = true;
-          console.log('✅ تم حفظ البيانات في Google Sheets بنجاح!');
+          console.log('✅ تم إرسال البيانات إلى Google Sheets (no-cors mode)');
+          console.log('💡 تحقق من Google Sheet للتأكد من وصول البيانات');
         } catch (error) {
-          console.warn('⚠️ فشل حفظ البيانات في Google Sheets:', error);
+          console.error('❌ فشل حفظ البيانات في Google Sheets:', error);
+          console.error('تفاصيل الخطأ:', error.message);
         }
+      } else {
+        console.warn('⚠️ رابط Google Script غير صحيح أو غير محدد:', scriptUrl);
+        console.warn('💡 تأكد من إدخال رابط Google Script في لوحة التحكم');
       }
       
       // إرجاع true إذا تم الحفظ في أي مكان على الأقل
@@ -656,8 +666,12 @@ const LuckyWheel = () => {
           }
           
           // حفظ في Google Sheets أيضاً
-          if (googleScriptUrl && googleScriptUrl.includes('script.google.com')) {
+          const scriptUrl = googleScriptUrl || DEFAULT_SCRIPT_URL;
+          if (scriptUrl && scriptUrl.includes('script.google.com')) {
             console.log('💾 جاري حفظ بيانات الجائزة في Google Sheets...');
+            console.log('🔗 الرابط:', scriptUrl);
+            console.log('🎁 الجائزة:', winData.prize);
+            
             const winFormData = new FormData();
             winFormData.append('action', 'saveWin');
             winFormData.append('name', winData.name);
@@ -667,13 +681,21 @@ const LuckyWheel = () => {
             winFormData.append('couponCode', winData.couponCode);
             winFormData.append('timestamp', new Date().toISOString());
             
-            fetch(googleScriptUrl, { 
+            fetch(scriptUrl, { 
               method: 'POST', 
               body: winFormData, 
               mode: 'no-cors' 
             })
-              .then(() => console.log('✅ تم حفظ بيانات الجائزة في Google Sheets'))
-              .catch(err => console.warn('⚠️ فشل حفظ في Google Sheets:', err));
+              .then(() => {
+                console.log('✅ تم إرسال بيانات الجائزة إلى Google Sheets');
+                console.log('💡 تحقق من Google Sheet → Wins');
+              })
+              .catch(err => {
+                console.error('❌ فشل حفظ في Google Sheets:', err);
+                console.error('تفاصيل:', err.message);
+              });
+          } else {
+            console.warn('⚠️ رابط Google Script غير محدد أو غير صحيح');
           }
         }
       }
@@ -741,21 +763,31 @@ const LuckyWheel = () => {
             }
             
             // حفظ في Google Sheets أيضاً
-            if (googleScriptUrl && googleScriptUrl.includes('script.google.com')) {
+            const scriptUrl = googleScriptUrl || DEFAULT_SCRIPT_URL;
+            if (scriptUrl && scriptUrl.includes('script.google.com')) {
                 console.log('💾 جاري حفظ بيانات المستخدم في Google Sheets...');
+                console.log('🔗 الرابط:', scriptUrl);
+                console.log('📝 البيانات:', { name: userData.name, email: userData.email, phone: userData.phone });
+                
                 const formData = new FormData();
                 formData.append('name', userData.name);
                 formData.append('email', userData.email);
                 formData.append('phone', userData.phone);
                 formData.append('timestamp', new Date().toISOString());
                 
-                fetch(googleScriptUrl, { 
+                fetch(scriptUrl, { 
                     method: 'POST', 
                     body: formData, 
                     mode: 'no-cors' 
                 }).then(() => {
-                    console.log('✅ تم حفظ بيانات المستخدم في Google Sheets');
-                }).catch(err => console.warn('⚠️ فشل حفظ في Google Sheets:', err));
+                    console.log('✅ تم إرسال بيانات المستخدم إلى Google Sheets');
+                    console.log('💡 تحقق من Google Sheet → UserData');
+                }).catch(err => {
+                    console.error('❌ فشل حفظ في Google Sheets:', err);
+                    console.error('تفاصيل:', err.message);
+                });
+            } else {
+                console.warn('⚠️ رابط Google Script غير محدد أو غير صحيح');
             }
             
             setIsRegistered(true);
