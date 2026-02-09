@@ -884,18 +884,78 @@ const LuckyWheel = () => {
 
   const toggleMute = () => setIsMuted(!isMuted);
 
+  // دالة لإضافة كود الدولة السعودية تلقائياً
+  const handlePhoneChange = (value) => {
+    // إزالة أي مسافات أو شرطات
+    let cleaned = value.replace(/[\s-]/g, '');
+    
+    // إذا بدأ بـ +966، اتركه كما هو
+    if (cleaned.startsWith('+966')) {
+      setUserData({...userData, phone: cleaned});
+      return;
+    }
+    
+    // إذا بدأ بـ 966 بدون +، أضف +
+    if (cleaned.startsWith('966')) {
+      setUserData({...userData, phone: '+' + cleaned});
+      return;
+    }
+    
+    // إذا بدأ بـ 0، استبدله بـ +966
+    if (cleaned.startsWith('0')) {
+      cleaned = '+966' + cleaned.substring(1);
+      setUserData({...userData, phone: cleaned});
+      return;
+    }
+    
+    // إذا كان فارغاً أو يبدأ برقم عادي، أضف +966
+    if (cleaned === '' || /^[1-9]/.test(cleaned)) {
+      if (cleaned === '') {
+        setUserData({...userData, phone: '+966'});
+      } else {
+        setUserData({...userData, phone: '+966' + cleaned});
+      }
+      return;
+    }
+    
+    // في أي حالة أخرى، احفظ القيمة كما هي
+    setUserData({...userData, phone: cleaned});
+  };
+
+  // دالة للتحقق من صحة الرقم السعودي
+  const validateSaudiPhone = (phone) => {
+    const cleanPhone = phone.replace(/[\s-]/g, '');
+    // رقم سعودي صحيح: +966 + 9 أرقام (يبدأ بـ 5)
+    const saudiPhoneRegex = /^\+9665[0-9]{8}$/;
+    return saudiPhoneRegex.test(cleanPhone);
+  };
+
   const handleRegistration = async (e) => {
     e.preventDefault();
     setPhoneError('');
-    const cleanPhone = userData.phone.replace(/[\s-]/g, '');
-    const phoneRegex = /^\+?[0-9]{7,15}$/;
-
-    if (!phoneRegex.test(cleanPhone)) {
-        setPhoneError('يرجى إدخال رقم هاتف صحيح يحتوي على كود الدولة');
+    
+    // التأكد من أن الرقم يحتوي على +966
+    let finalPhone = userData.phone.replace(/[\s-]/g, '');
+    if (!finalPhone.startsWith('+966')) {
+      if (finalPhone.startsWith('966')) {
+        finalPhone = '+' + finalPhone;
+      } else if (finalPhone.startsWith('0')) {
+        finalPhone = '+966' + finalPhone.substring(1);
+      } else {
+        finalPhone = '+966' + finalPhone;
+      }
+    }
+    
+    // التحقق من صحة الرقم السعودي
+    if (!validateSaudiPhone(finalPhone)) {
+        setPhoneError('يرجى إدخال رقم هاتف سعودي صحيح (يبدأ بـ 05)');
         return;
     }
     
-    if (userData.name && userData.email && userData.phone) {
+    // تحديث رقم الهاتف بالقيمة الصحيحة
+    setUserData({...userData, phone: finalPhone});
+    
+    if (userData.name && userData.email && finalPhone) {
         setIsSubmitting(true);
         try {
             // حفظ في Supabase و Google Sheets معاً
@@ -907,7 +967,7 @@ const LuckyWheel = () => {
                 saveSupabaseUserData({
                     name: userData.name,
                     email: userData.email,
-                    phone: userData.phone
+                    phone: finalPhone
                 }).then(saved => {
                     if (saved) console.log('✅ تم حفظ بيانات المستخدم في Supabase');
                 }).catch(err => console.warn('⚠️ فشل حفظ في Supabase:', err));
@@ -918,13 +978,13 @@ const LuckyWheel = () => {
             if (scriptUrl && scriptUrl.includes('script.google.com')) {
                 console.log('💾 جاري حفظ بيانات المستخدم في Google Sheets...');
                 console.log('🔗 الرابط:', scriptUrl);
-                console.log('📝 البيانات:', { name: userData.name, email: userData.email, phone: userData.phone });
+                console.log('📝 البيانات:', { name: userData.name, email: userData.email, phone: finalPhone });
                 
                 // استخدام URLSearchParams بدلاً من FormData لضمان وصول البيانات
                 const params = new URLSearchParams();
                 params.append('name', userData.name || '');
                 params.append('email', userData.email || '');
-                params.append('phone', userData.phone || '');
+                params.append('phone', finalPhone || '');
                 params.append('timestamp', new Date().toISOString());
                 
                 // إرسال البيانات مع retry mechanism
@@ -1601,7 +1661,25 @@ const LuckyWheel = () => {
               <form onSubmit={handleRegistration} className="space-y-4">
                  <div className="relative"><User className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400" size={20} /><input type="text" placeholder="الاسم بالكامل" required className="w-full pr-10 pl-4 py-3 rounded-xl border-2 border-slate-200 focus:border-yellow-400 focus:ring-0 outline-none transition-all bg-slate-50" value={userData.name} onChange={(e) => setUserData({...userData, name: e.target.value})} disabled={isSubmitting} /></div>
                  <div className="relative"><Mail className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400" size={20} /><input type="email" placeholder="البريد الإلكتروني" required className="w-full pr-10 pl-4 py-3 rounded-xl border-2 border-slate-200 focus:border-yellow-400 focus:ring-0 outline-none transition-all bg-slate-50" value={userData.email} onChange={(e) => setUserData({...userData, email: e.target.value})} disabled={isSubmitting} /></div>
-                 <div className="relative"><Phone className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400" size={20} /><input type="tel" placeholder="رقم الهاتف (مع كود الدولة)" required className={`w-full pr-10 pl-4 py-3 rounded-xl border-2 focus:ring-0 outline-none transition-all bg-slate-50 text-left ${phoneError ? 'border-red-500 focus:border-red-500' : 'border-slate-200 focus:border-yellow-400'}`} value={userData.phone} onChange={(e) => setUserData({...userData, phone: e.target.value})} disabled={isSubmitting} dir="ltr" /></div>
+                 <div className="relative">
+                   <Phone className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400" size={20} />
+                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-medium z-10">🇸🇦 +966</div>
+                   <input 
+                     type="tel" 
+                     placeholder="5xxxxxxxx" 
+                     required 
+                     className={`w-full pr-10 pl-16 py-3 rounded-xl border-2 focus:ring-0 outline-none transition-all bg-slate-50 text-left ${phoneError ? 'border-red-500 focus:border-red-500' : 'border-slate-200 focus:border-yellow-400'}`} 
+                     value={userData.phone.replace('+966', '')} 
+                     onChange={(e) => handlePhoneChange(e.target.value)} 
+                     onFocus={(e) => {
+                       if (!userData.phone || userData.phone === '+966') {
+                         e.target.value = '';
+                       }
+                     }}
+                     disabled={isSubmitting} 
+                     dir="ltr" 
+                   />
+                 </div>
                  {phoneError && (<p className="text-red-500 text-xs flex items-center gap-1 mt-1 font-bold"><AlertCircle size={12} /> {phoneError}</p>)}
                  <button type="submit" disabled={isSubmitting} className={`w-full font-bold py-4 rounded-xl shadow-lg transform transition-all flex items-center justify-center gap-2 text-lg mt-4 ${isSubmitting ? 'bg-slate-400 cursor-wait' : 'bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 active:scale-95 text-white'}`}>{isSubmitting ? (<><Loader2 size={20} className="animate-spin" /> جاري الحفظ... </>) : (<><Lock size={20} /> سجل والعب الآن </>)}</button>
                  <p className="text-xs text-center text-slate-400 mt-4 flex items-center justify-center gap-1"><CheckCircle size={12} className="text-green-500" /> بياناتك آمنة ولن يتم مشاركتها.</p>
