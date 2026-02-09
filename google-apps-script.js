@@ -3,24 +3,60 @@
 
 function doPost(e) {
   try {
-    const action = e.parameter.action;
+    Logger.log('=== doPost called ===');
+    Logger.log('Full event: ' + JSON.stringify(e));
     
-    // تسجيل البيانات المستلمة للتشخيص
-    Logger.log('Received POST request');
-    Logger.log('Action: ' + action);
-    Logger.log('Parameters: ' + JSON.stringify(e.parameter));
+    // محاولة قراءة البيانات من parameter أو postData
+    let action = '';
+    let parameters = {};
+    
+    // قراءة من parameter (URL parameters)
+    if (e.parameter) {
+      action = e.parameter.action || '';
+      parameters = e.parameter;
+      Logger.log('From parameter - Action: ' + action);
+      Logger.log('From parameter - Parameters: ' + JSON.stringify(e.parameter));
+    }
+    
+    // قراءة من postData (POST body)
+    if (e.postData && e.postData.contents) {
+      try {
+        const postData = e.postData.contents;
+        Logger.log('PostData contents: ' + postData);
+        
+        // محاولة parse كـ URL-encoded
+        const urlParams = new URLSearchParams(postData);
+        for (const [key, value] of urlParams.entries()) {
+          parameters[key] = value;
+          if (key === 'action') {
+            action = value;
+          }
+        }
+        Logger.log('Parsed from postData - Action: ' + action);
+        Logger.log('Parsed from postData - Parameters: ' + JSON.stringify(parameters));
+      } catch (parseError) {
+        Logger.log('Error parsing postData: ' + parseError.toString());
+      }
+    }
+    
+    // إنشاء event object جديد مع البيانات المدمجة
+    const mergedEvent = {
+      parameter: parameters,
+      postData: e.postData
+    };
     
     if (action === 'saveSettings') {
-      return saveSettings(e);
+      return saveSettings(mergedEvent);
     } else if (action === 'saveWin') {
-      return saveWinData(e);
+      return saveWinData(mergedEvent);
     } else {
       // حفظ بيانات المستخدم (الوظيفة الأصلية - بدون action parameter)
       Logger.log('Saving user data (no action specified)');
-      return saveUserData(e);
+      return saveUserData(mergedEvent);
     }
   } catch (error) {
     Logger.log('Error in doPost: ' + error.toString());
+    Logger.log('Error stack: ' + error.stack);
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
       error: error.toString()
@@ -169,34 +205,62 @@ function getSettings() {
 // حفظ بيانات المستخدم (الوظيفة الأصلية)
 function saveUserData(e) {
   try {
-    Logger.log('saveUserData called');
+    Logger.log('=== saveUserData called ===');
+    Logger.log('Full request: ' + JSON.stringify(e));
     Logger.log('Parameters: ' + JSON.stringify(e.parameter));
+    Logger.log('PostData: ' + (e.postData ? e.postData.contents : 'No postData'));
     
     const ss = initializeSheets();
     let userDataSheet = ss.getSheetByName('UserData');
     
-    const name = e.parameter.name || '';
-    const email = e.parameter.email || '';
-    const phone = e.parameter.phone || '';
-    const timestamp = e.parameter.timestamp || new Date().toISOString();
+    // محاولة قراءة البيانات من parameter أو postData
+    let name = '';
+    let email = '';
+    let phone = '';
+    let timestamp = new Date().toISOString();
     
-    Logger.log('Data to save: ' + name + ', ' + email + ', ' + phone);
+    if (e.parameter) {
+      name = e.parameter.name || '';
+      email = e.parameter.email || '';
+      phone = e.parameter.phone || '';
+      timestamp = e.parameter.timestamp || new Date().toISOString();
+    }
+    
+    // إذا لم تكن البيانات في parameter، جرب قراءة من postData
+    if (!name && e.postData && e.postData.contents) {
+      try {
+        const postData = e.postData.contents;
+        Logger.log('Trying to parse postData: ' + postData);
+        const params = new URL(postData).searchParams || {};
+        name = params.get('name') || '';
+        email = params.get('email') || '';
+        phone = params.get('phone') || '';
+        timestamp = params.get('timestamp') || new Date().toISOString();
+      } catch (parseError) {
+        Logger.log('Error parsing postData: ' + parseError.toString());
+      }
+    }
+    
+    Logger.log('Final data to save - Name: ' + name + ', Email: ' + email + ', Phone: ' + phone);
     
     // التأكد من وجود الأعمدة
     if (userDataSheet.getLastRow() === 0) {
       userDataSheet.appendRow(['Name', 'Email', 'Phone', 'Timestamp']);
     }
     
+    // حفظ البيانات
     userDataSheet.appendRow([name, email, phone, timestamp]);
     
-    Logger.log('User data saved successfully');
+    Logger.log('✅ User data saved successfully to row: ' + userDataSheet.getLastRow());
     
     return ContentService.createTextOutput(JSON.stringify({
       success: true,
-      message: 'User data saved'
+      message: 'User data saved',
+      row: userDataSheet.getLastRow()
     })).setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
-    Logger.log('Error in saveUserData: ' + error.toString());
+    Logger.log('❌ Error in saveUserData: ' + error.toString());
+    Logger.log('Error stack: ' + error.stack);
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
       error: error.toString()
@@ -206,20 +270,42 @@ function saveUserData(e) {
 
 // حفظ بيانات الجائزة الفائزة
 function saveWinData(e) {
-  const ss = initializeSheets();
-  let winsSheet = ss.getSheetByName('Wins');
-  
-  const name = e.parameter.name || '';
-  const email = e.parameter.email || '';
-  const phone = e.parameter.phone || '';
-  const prize = e.parameter.prize || '';
-  const couponCode = e.parameter.couponCode || '';
-  const timestamp = e.parameter.timestamp || new Date().toISOString();
-  
-  winsSheet.appendRow([name, email, phone, prize, couponCode, timestamp]);
-  
-  return ContentService.createTextOutput(JSON.stringify({
-    success: true,
-    message: 'Win data saved'
-  })).setMimeType(ContentService.MimeType.JSON);
+  try {
+    Logger.log('=== saveWinData called ===');
+    Logger.log('Parameters: ' + JSON.stringify(e.parameter));
+    
+    const ss = initializeSheets();
+    let winsSheet = ss.getSheetByName('Wins');
+    
+    const name = e.parameter.name || '';
+    const email = e.parameter.email || '';
+    const phone = e.parameter.phone || '';
+    const prize = e.parameter.prize || '';
+    const couponCode = e.parameter.couponCode || '';
+    const timestamp = e.parameter.timestamp || new Date().toISOString();
+    
+    Logger.log('Win data to save - Name: ' + name + ', Prize: ' + prize + ', Code: ' + couponCode);
+    
+    // التأكد من وجود الأعمدة
+    if (winsSheet.getLastRow() === 0) {
+      winsSheet.appendRow(['Name', 'Email', 'Phone', 'Prize', 'Coupon Code', 'Timestamp']);
+    }
+    
+    winsSheet.appendRow([name, email, phone, prize, couponCode, timestamp]);
+    
+    Logger.log('✅ Win data saved successfully to row: ' + winsSheet.getLastRow());
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      message: 'Win data saved',
+      row: winsSheet.getLastRow()
+    })).setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    Logger.log('❌ Error in saveWinData: ' + error.toString());
+    Logger.log('Error stack: ' + error.stack);
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
 }

@@ -802,28 +802,45 @@ const LuckyWheel = () => {
             console.log('🔗 الرابط:', scriptUrl);
             console.log('🎁 الجائزة:', winData.prize);
             
-            const winFormData = new FormData();
-            winFormData.append('action', 'saveWin');
-            winFormData.append('name', winData.name);
-            winFormData.append('email', winData.email);
-            winFormData.append('phone', winData.phone);
-            winFormData.append('prize', winData.prize);
-            winFormData.append('couponCode', winData.couponCode);
-            winFormData.append('timestamp', new Date().toISOString());
+            // استخدام URLSearchParams بدلاً من FormData
+            const winParams = new URLSearchParams();
+            winParams.append('action', 'saveWin');
+            winParams.append('name', winData.name || '');
+            winParams.append('email', winData.email || '');
+            winParams.append('phone', winData.phone || '');
+            winParams.append('prize', winData.prize || '');
+            winParams.append('couponCode', winData.couponCode || '');
+            winParams.append('timestamp', new Date().toISOString());
             
-            fetch(scriptUrl, { 
-              method: 'POST', 
-              body: winFormData, 
-              mode: 'no-cors' 
-            })
-              .then(() => {
-                console.log('✅ تم إرسال بيانات الجائزة إلى Google Sheets');
-                console.log('💡 تحقق من Google Sheet → Wins');
-              })
-              .catch(err => {
-                console.error('❌ فشل حفظ في Google Sheets:', err);
-                console.error('تفاصيل:', err.message);
-              });
+            // إرسال البيانات مع retry mechanism
+            const sendWinToGoogleSheets = async (retries = 3) => {
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const response = await fetch(scriptUrl, { 
+                            method: 'POST', 
+                            body: winParams,
+                            mode: 'no-cors',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            }
+                        });
+                        console.log(`✅ محاولة ${i + 1}: تم إرسال بيانات الجائزة إلى Google Sheets`);
+                        console.log('💡 تحقق من Google Sheet → Wins');
+                        break; // نجحت، توقف عن المحاولات
+                    } catch (err) {
+                        console.error(`❌ محاولة ${i + 1} فشلت:`, err);
+                        if (i === retries - 1) {
+                            console.error('❌ فشل حفظ في Google Sheets بعد جميع المحاولات');
+                            console.error('تفاصيل:', err.message);
+                        } else {
+                            // انتظر قليلاً قبل المحاولة التالية
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
+                    }
+                }
+            };
+            
+            sendWinToGoogleSheets();
           } else {
             console.warn('⚠️ رابط Google Script غير محدد أو غير صحيح');
           }
@@ -903,23 +920,42 @@ const LuckyWheel = () => {
                 console.log('🔗 الرابط:', scriptUrl);
                 console.log('📝 البيانات:', { name: userData.name, email: userData.email, phone: userData.phone });
                 
-                const formData = new FormData();
-                formData.append('name', userData.name);
-                formData.append('email', userData.email);
-                formData.append('phone', userData.phone);
-                formData.append('timestamp', new Date().toISOString());
+                // استخدام URLSearchParams بدلاً من FormData لضمان وصول البيانات
+                const params = new URLSearchParams();
+                params.append('name', userData.name || '');
+                params.append('email', userData.email || '');
+                params.append('phone', userData.phone || '');
+                params.append('timestamp', new Date().toISOString());
                 
-                fetch(scriptUrl, { 
-                    method: 'POST', 
-                    body: formData, 
-                    mode: 'no-cors' 
-                }).then(() => {
-                    console.log('✅ تم إرسال بيانات المستخدم إلى Google Sheets');
-                    console.log('💡 تحقق من Google Sheet → UserData');
-                }).catch(err => {
-                    console.error('❌ فشل حفظ في Google Sheets:', err);
-                    console.error('تفاصيل:', err.message);
-                });
+                // إرسال البيانات مع retry mechanism
+                const sendToGoogleSheets = async (retries = 3) => {
+                    for (let i = 0; i < retries; i++) {
+                        try {
+                            const response = await fetch(scriptUrl, { 
+                                method: 'POST', 
+                                body: params,
+                                mode: 'no-cors',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                }
+                            });
+                            console.log(`✅ محاولة ${i + 1}: تم إرسال بيانات المستخدم إلى Google Sheets`);
+                            console.log('💡 تحقق من Google Sheet → UserData');
+                            break; // نجحت، توقف عن المحاولات
+                        } catch (err) {
+                            console.error(`❌ محاولة ${i + 1} فشلت:`, err);
+                            if (i === retries - 1) {
+                                console.error('❌ فشل حفظ في Google Sheets بعد جميع المحاولات');
+                                console.error('تفاصيل:', err.message);
+                            } else {
+                                // انتظر قليلاً قبل المحاولة التالية
+                                await new Promise(resolve => setTimeout(resolve, 1000));
+                            }
+                        }
+                    }
+                };
+                
+                sendToGoogleSheets();
             } else {
                 console.warn('⚠️ رابط Google Script غير محدد أو غير صحيح');
             }
