@@ -75,8 +75,7 @@ const ConfettiEffect = ({ active }) => {
 const LuckyWheel = () => {
   const apiKey = ""; 
 
-  // الرابط الافتراضي (يمكن تغييره من الداشبورد)
-  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnA-QJ1XgQA5YT_JcXZjXzp5tivxSrv1gW7ruMHs-0RrhXTkdfBfnFoxgir2G3ks7-1A/exec"; 
+  // لا يوجد رابط افتراضي - يجب إدخاله من لوحة التحكم 
 
   // تعريف الكوبونات الافتراضية مع الأوزان (الاحتمالات)
   const initialSegments = [
@@ -142,12 +141,11 @@ const LuckyWheel = () => {
         console.warn('⚠️ لم يتم العثور على بيانات في Supabase، جاري المحاولة من Google Sheets...');
       }
       
-      // إذا فشل Supabase أو لم يكن مفعّل، جرب Google Sheets
-      const savedUrl = localStorage.getItem('googleScriptUrl');
-      const scriptUrl = savedUrl || googleScriptUrl || DEFAULT_SCRIPT_URL;
+      // إذا فشل Supabase أو لم يكن مفعّل، جرب Google Sheets فقط إذا كان الرابط موجود في Supabase
+      const scriptUrl = googleScriptUrl;
       
       if (!scriptUrl || scriptUrl.trim() === '' || !scriptUrl.includes('script.google.com')) {
-        console.warn('⚠️ رابط Google Script غير محدد، استخدام البيانات المحلية');
+        console.warn('⚠️ رابط Google Script غير محدد في Supabase، استخدام البيانات المحلية');
         return loadSettingsFromStorage();
       }
       
@@ -212,11 +210,11 @@ const LuckyWheel = () => {
         }
       }
       
-      // حفظ في Google Sheets أيضاً
-      const scriptUrl = googleScriptUrl || DEFAULT_SCRIPT_URL;
-      console.log('🔍 رابط Google Script:', scriptUrl);
+      // حفظ في Google Sheets أيضاً (فقط إذا كان الرابط موجود في Supabase)
+      const scriptUrl = googleScriptUrl;
+      console.log('🔍 رابط Google Script:', scriptUrl || 'غير محدد');
       
-      if (scriptUrl && scriptUrl.includes('script.google.com')) {
+      if (scriptUrl && scriptUrl.trim() !== '' && scriptUrl.includes('script.google.com')) {
         console.log('💾 جاري حفظ البيانات في Google Sheets...');
         console.log('📊 البيانات المرسلة:', JSON.stringify(settings).substring(0, 200));
         
@@ -277,9 +275,9 @@ const LuckyWheel = () => {
   const [winSound, setWinSound] = useState(loadedSettings?.winSound || "https://www.soundjay.com/human/sounds/applause-01.mp3");
   const [loseSound, setLoseSound] = useState(loadedSettings?.loseSound || "https://www.soundjay.com/misc/sounds/fail-trombone-01.mp3");
   
-  // استرجاع الرابط من التخزين المحلي إذا وجد، أو استخدام الافتراضي
+  // استرجاع الرابط من الإعدادات المحملة من Supabase فقط (لا توجد قيمة افتراضية)
   const [googleScriptUrl, setGoogleScriptUrl] = useState(() => {
-    return localStorage.getItem('googleScriptUrl') || DEFAULT_SCRIPT_URL;
+    return loadedSettings?.googleScriptUrl || '';
   });
 
   const [socialLinks, setSocialLinks] = useState(loadedSettings?.socialLinks || {
@@ -507,6 +505,15 @@ const LuckyWheel = () => {
           setWinSound(cloudSettings.winSound || "https://www.soundjay.com/human/sounds/applause-01.mp3");
           setLoseSound(cloudSettings.loseSound || "https://www.soundjay.com/misc/sounds/fail-trombone-01.mp3");
           
+          // تحديث رابط Google Script من السحابة فقط
+          if (cloudSettings.googleScriptUrl) {
+            setGoogleScriptUrl(cloudSettings.googleScriptUrl);
+            console.log('✅ تم تحميل رابط Google Script من السحابة:', cloudSettings.googleScriptUrl);
+          } else {
+            // إذا لم يكن موجوداً في السحابة، امسح أي قيمة محلية
+            setGoogleScriptUrl('');
+          }
+          
           // حفظ في localStorage كنسخة احتياطية (باستخدام cleanedSegments)
           localStorage.setItem('wheelSegments', JSON.stringify(cleanedSegments));
           localStorage.setItem('maxSpins', (cloudSettings.maxSpins || 1).toString());
@@ -519,6 +526,7 @@ const LuckyWheel = () => {
           localStorage.setItem('backgroundSettings', JSON.stringify(cloudSettings.backgroundSettings || {}));
           localStorage.setItem('winSound', cloudSettings.winSound || "");
           localStorage.setItem('loseSound', cloudSettings.loseSound || "");
+          // لا نحفظ googleScriptUrl في localStorage - فقط في Supabase
           
           console.log('✅ تم تحديث جميع الإعدادات من السحابة بنجاح!');
         } else {
@@ -795,9 +803,9 @@ const LuckyWheel = () => {
               .catch(err => console.warn('⚠️ فشل حفظ في Supabase:', err));
           }
           
-          // حفظ في Google Sheets أيضاً
-          const scriptUrl = googleScriptUrl || DEFAULT_SCRIPT_URL;
-          if (scriptUrl && scriptUrl.includes('script.google.com')) {
+          // حفظ في Google Sheets أيضاً (فقط إذا كان الرابط موجود)
+          const scriptUrl = googleScriptUrl;
+          if (scriptUrl && scriptUrl.trim() !== '' && scriptUrl.includes('script.google.com')) {
             console.log('💾 جاري حفظ بيانات الجائزة في Google Sheets...');
             console.log('🔗 الرابط:', scriptUrl);
             console.log('🎁 الجائزة:', winData.prize);
@@ -977,9 +985,9 @@ const LuckyWheel = () => {
                 }).catch(err => console.warn('⚠️ فشل حفظ في Supabase:', err));
             }
             
-            // حفظ في Google Sheets أيضاً
-            const scriptUrl = googleScriptUrl || DEFAULT_SCRIPT_URL;
-            if (scriptUrl && scriptUrl.includes('script.google.com')) {
+            // حفظ في Google Sheets أيضاً (فقط إذا كان الرابط موجود)
+            const scriptUrl = googleScriptUrl;
+            if (scriptUrl && scriptUrl.trim() !== '' && scriptUrl.includes('script.google.com')) {
                 console.log('💾 جاري حفظ بيانات المستخدم في Google Sheets...');
                 console.log('🔗 الرابط:', scriptUrl);
                 console.log('📝 البيانات:', { name: userData.name, email: userData.email, phone: finalPhone });
@@ -1046,6 +1054,7 @@ const LuckyWheel = () => {
       setTempMaxSpins(maxSpins);
       setTempLogo(storeLogo);
       setTempSocialLinks({ ...socialLinks });
+      // تحميل رابط Google Script من السحابة أولاً
       setTempGoogleScriptUrl(googleScriptUrl);
       setTempWinSound(winSound);
       setTempLoseSound(loseSound);
@@ -1193,7 +1202,7 @@ const LuckyWheel = () => {
       setSocialLinks(tempSocialLinks);
       
       setGoogleScriptUrl(tempGoogleScriptUrl);
-      localStorage.setItem('googleScriptUrl', tempGoogleScriptUrl);
+      // لا نحفظ في localStorage - فقط في Supabase
 
       // حفظ الخلفية
       setBackgroundSettings(tempBackgroundSettings);
