@@ -4,7 +4,8 @@ import {
   Volume2, VolumeX, User, Mail, Phone, Lock, CheckCircle, AlertCircle, 
   Settings, Plus, Trash2, Save, Edit3, Ticket, List, Copy, Scale, Hash, 
   Upload, Image as ImageIcon, Facebook, Instagram, Twitter, Globe, MessageCircle, Share2,
-  Database, Link as LinkIcon, ExternalLink, Music, Play, Palette, Smartphone, Monitor, Ghost
+  Database, Link as LinkIcon, ExternalLink, Music, Play, Palette, Smartphone, Monitor, Ghost,
+  CreditCard, ShieldCheck
 } from 'lucide-react';
 import { getSettings as getSupabaseSettings, saveSettings as saveSupabaseSettings, saveUserData as saveSupabaseUserData, saveWinData as saveSupabaseWinData } from './lib/supabase';
 
@@ -72,6 +73,146 @@ const ConfettiEffect = ({ active }) => {
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[100]" />;
 };
 
+// --- مكون الفوتر المطابق للصورة (Pixel Perfect) ---
+const Footer = ({ logo, socialLinks, footerSettings }) => {
+    const footerDescription = footerSettings?.description || 'مرحبا بكم في خيمة الالعاب .. أسعد مكان يتجول فيه الصغار والكبار متخصص في بيع المنتجات الترفيهية هنا نصنع البهجة';
+    const footerLinks = footerSettings?.links || [];
+    const taxId = footerSettings?.taxId || '300155258800003';
+    
+    return (
+      <footer className="w-full bg-white text-slate-800 border-t border-slate-100 mt-auto relative z-20 font-sans" dir="rtl">
+          {/* Top Section */}
+          <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
+                  
+                  {/* Col 1: Logo & Description (Right - 4 cols) */}
+                  <div className="lg:col-span-4 space-y-4 text-right">
+                       <div className="flex justify-start">
+                           {logo ? (
+                               <img src={logo} alt="Logo" className="h-20 object-contain mb-2" />
+                           ) : (
+                               <div className="flex flex-col items-center mb-2">
+                                   <Gift className="text-cyan-500 w-12 h-12 mb-1" />
+                                   <h2 className="text-xl font-bold text-cyan-500">خيمة الألعاب</h2>
+                               </div>
+                           )}
+                       </div>
+                       <p className="leading-7 text-slate-700 text-sm font-medium max-w-sm">
+                       {footerDescription}
+                       </p>
+                  </div>
+  
+                  {/* Col 2: Links (Center Right - 3 cols) - أول 5 روابط */}
+                  <div className="lg:col-span-3">
+                      <h3 className="font-bold text-cyan-500 mb-5 text-lg">روابط تهمك</h3>
+                      <ul className="space-y-2.5 text-sm text-slate-800 font-medium">
+                          {footerLinks.length > 0 ? (
+                              footerLinks.slice(0, 5).map((link, index) => (
+                                  <li key={index}>
+                                      <a href={link.url || '#'} target={link.url?.startsWith('http') ? '_blank' : '_self'} rel="noopener noreferrer" className="hover:text-cyan-600 transition-colors block">
+                                          {link.label || `رابط ${index + 1}`}
+                                      </a>
+                                  </li>
+                              ))
+                          ) : (
+                              <>
+                                  <li><a href="#" className="hover:text-cyan-600 transition-colors block">المدونة</a></li>
+                                  <li><a href="#" className="hover:text-cyan-600 transition-colors block">لصناع المحتوى</a></li>
+                                  <li><a href="#" className="hover:text-cyan-600 transition-colors block">سياسة الشحن والتوصيل</a></li>
+                                  <li><a href="#" className="hover:text-cyan-600 transition-colors block">الشروط والاحكام</a></li>
+                                  <li><a href="#" className="hover:text-cyan-600 transition-colors block">الارجاع والاستبدال والالغاء</a></li>
+                              </>
+                          )}
+                      </ul>
+                  </div>
+  
+                  {/* Col 3: More Links (Center Left - 3 cols) - باقي الروابط */}
+                  <div className="lg:col-span-3 lg:pt-[52px]"> {/* Padding to align with the list above */}
+                       <ul className="space-y-2.5 text-sm text-slate-800 font-medium">
+                          {footerLinks.length > 5 ? (
+                              footerLinks.slice(5).map((link, index) => (
+                                  <li key={index + 5}>
+                                      <a href={link.url || '#'} target={link.url?.startsWith('http') ? '_blank' : '_self'} rel="noopener noreferrer" className="hover:text-cyan-600 transition-colors block">
+                                          {link.label || `رابط ${index + 6}`}
+                                      </a>
+                                  </li>
+                              ))
+                          ) : null}
+                      </ul>
+                  </div>
+  
+                  {/* Col 4: Contact & Tax (Left - 2 cols) */}
+                  <div className="lg:col-span-2 flex flex-col items-start lg:items-start gap-8">
+                      {/* Customer Service */}
+                      <div className="w-full text-right lg:text-right">
+                          <h3 className="font-bold text-cyan-500 mb-5 text-lg">خدمة العملاء</h3>
+                          <div className="flex gap-5 justify-start items-center">
+                               {socialLinks?.whatsapp && (
+                                   <a href={`https://wa.me/${socialLinks.whatsapp}`} target="_blank" rel="noreferrer" className="text-slate-900 hover:text-green-500 transition-all"><MessageCircle size={22} strokeWidth={2} /></a>
+                               )}
+                                <a href="mailto:support@khymatoys.com" className="text-slate-900 hover:text-red-500 transition-all"><Mail size={22} strokeWidth={2} /></a>
+                               {socialLinks?.phone && (
+                                   <a href={`tel:${socialLinks.phone}`} className="text-slate-900 hover:text-blue-500 transition-all"><Phone size={22} strokeWidth={2} /></a>
+                               )}
+                          </div>
+                      </div>
+
+                      {/* Tax ID */}
+                      <div className="w-full text-right lg:text-right mt-2">
+                          <h3 className="font-bold text-slate-800 mb-1 text-sm">الرقم الضريبي</h3>
+                          <p className="font-mono text-slate-600 text-sm mb-2">{taxId}</p>
+                          <div className="w-10 h-10 opacity-80">
+                             {/* Placeholder for the small logo under tax ID */}
+                             {logo ? <img src={logo} className="w-full h-full object-contain grayscale" alt="Tax Logo" /> : <Gift size={24} className="text-slate-400"/>}
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+  
+          {/* Bottom Section */}
+          <div className="border-t border-slate-100 py-6 bg-white">
+              <div className="max-w-[1400px] mx-auto px-4 md:px-8 flex flex-col-reverse md:flex-row justify-between items-center gap-6 text-xs font-medium text-slate-500">
+                  
+                  {/* Copyright (Right) */}
+                  <div className="text-center md:text-right w-full md:w-auto">
+                      الحقوق محفوظة | 2026 خيمة الالعاب khyma toys
+                  </div>
+
+                  {/* Payment Icons (Center) */}
+                  <div className="flex items-center gap-2 flex-wrap justify-center w-full md:w-auto">
+                      <div className="h-6 px-1 flex items-center"><img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-5" onError={(e) => e.target.style.display='none'} /><span className="hidden">Mastercard</span></div>
+                      <div className="h-6 px-1 flex items-center"><img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-3" onError={(e) => e.target.style.display='none'} /><span className="hidden">Visa</span></div>
+                      <div className="h-6 px-1 flex items-center"><span className="text-purple-700 font-bold italic text-sm">stc pay</span></div>
+                      <div className="h-6 px-1 flex items-center"><span className="text-black font-bold text-sm flex gap-1 items-center"><span className="text-lg"></span>Pay</span></div>
+                      <div className="h-6 px-1 flex items-center"><span className="text-green-600 font-bold text-sm tracking-tighter">tabby</span></div>
+                      <div className="h-6 px-1 flex items-center"><span className="text-pink-500 font-bold text-sm bg-pink-100 px-1 rounded">tamara</span></div>
+                      <div className="h-6 px-1 flex items-center"><div className="w-8 h-5 bg-blue-900 rounded relative overflow-hidden flex items-center justify-center text-[6px] text-white font-bold tracking-widest">mada</div></div>
+                  </div>
+
+                  {/* Business Platform (Left) */}
+                  <div className="flex items-center gap-2 w-full md:w-auto justify-center md:justify-end">
+                       <span className="text-slate-600">موثق في منصة الأعمال</span>
+                       <div className="flex items-center">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="33" height="32" viewBox="0 0 33 32" fill="none">
+                             <path fillRule="evenodd" clipRule="evenodd" d="M27.8907 19.4494C27.7256 19.752 27.3679 19.8895 27.0378 19.7795C26.405 19.5869 25.7998 19.3943 25.1945 19.2293C24.5893 19.0367 23.9565 18.8716 23.3513 18.7341C22.1132 18.4314 20.8752 18.1288 19.6372 17.9087C19.0595 17.7987 18.6468 17.2484 18.7568 16.6432C18.7843 16.5331 18.8119 16.4231 18.8669 16.3131C19.4721 15.2126 20.1324 14.2222 20.8202 13.2593C21.508 12.2964 22.2508 11.361 23.0486 10.4806C23.3237 10.178 23.7914 10.1505 24.0941 10.4256C24.3417 10.6457 24.3967 11.0308 24.2591 11.306C23.7089 12.3514 23.1312 13.3418 22.5259 14.3597L21.6455 15.8454C21.618 15.9004 21.563 15.9829 21.5355 16.0379C22.3608 16.2305 23.1587 16.4781 23.9565 16.7532C24.5893 16.9733 25.222 17.2209 25.8273 17.496C26.4325 17.7712 27.0653 18.0738 27.6431 18.4039C27.9732 18.6515 28.1107 19.0917 27.8907 19.4494Z" fill="#59529F"/>
+                             <path fillRule="evenodd" clipRule="evenodd" d="M13.42 17.7985C13.3099 17.8535 13.1999 17.881 13.0898 17.9086C11.8518 18.1286 10.6138 18.4038 9.37578 18.7339C8.77052 18.899 8.13776 19.064 7.53251 19.2291C6.92726 19.3942 6.322 19.5868 5.68923 19.7793C5.30407 19.8894 4.8914 19.6693 4.78136 19.2841C4.69882 18.954 4.83637 18.6239 5.11149 18.4313C5.68923 18.1011 6.29449 17.7985 6.89974 17.5234C7.50499 17.2483 8.13776 17.0007 8.77053 16.7806C9.56836 16.5055 10.3662 16.2579 11.1915 16.0653C11.164 16.0103 11.109 15.9277 11.0815 15.8727L10.2011 14.3871C9.59587 13.3967 9.01813 12.3787 8.4679 11.3333C8.27532 10.9757 8.41288 10.5355 8.77053 10.3429C9.07315 10.1778 9.4308 10.2604 9.65089 10.508C10.4487 11.3883 11.1915 12.3237 11.8793 13.2866C12.5671 14.2495 13.2274 15.2399 13.8326 16.3404C14.1353 16.8356 13.9702 17.4959 13.42 17.7985Z" fill="#532D7B"/>
+                             <path fillRule="evenodd" clipRule="evenodd" d="M21.0679 31.5269C20.7378 31.6369 20.3801 31.5269 20.1875 31.2242C19.7749 30.564 19.3897 29.8762 18.977 29.1884L17.8215 27.1525L16.6661 25.1167C16.5835 24.9516 16.4735 24.8141 16.3909 24.649C16.3084 24.8141 16.1984 24.9516 16.1158 25.1167L14.9604 27.1525L13.7774 29.1884C13.3647 29.8487 12.9795 30.5365 12.5668 31.1967C12.3468 31.5269 11.9066 31.6369 11.5489 31.4168C11.2463 31.2242 11.1363 30.8666 11.2463 30.5365C11.5214 29.7936 11.824 29.0783 12.1542 28.3355C12.4568 27.6202 12.8145 26.9049 13.1446 26.1896C13.5022 25.4743 13.8599 24.759 14.2451 24.0713C14.6302 23.3835 15.0154 22.6682 15.4831 21.9804V21.9529C15.8132 21.4577 16.4735 21.3201 16.9687 21.6503C17.0787 21.7328 17.1888 21.8428 17.2713 21.9529C17.739 22.6682 18.1242 23.356 18.5093 24.0713C18.867 24.7866 19.2521 25.4743 19.5823 26.1896C19.9399 26.9049 20.2701 27.6202 20.5727 28.3355C20.8753 29.0783 21.2055 29.7936 21.5081 30.5365C21.6456 30.9766 21.4531 31.3893 21.0679 31.5269Z" fill="#2A4B8F"/>
+                             <path fillRule="evenodd" clipRule="evenodd" d="M15.6206 7.26166C15.4555 6.71143 15.373 6.16121 15.318 5.58347C15.2629 5.03324 15.2629 4.483 15.2629 3.90526C15.2905 2.8048 15.373 1.67683 15.6481 0.576374C15.7581 0.163701 16.1433 -0.0839019 16.556 0.026144C16.8311 0.108678 17.0512 0.32877 17.1062 0.576374C17.3813 1.67683 17.4363 2.8048 17.4639 3.90526C17.4639 4.45549 17.4363 5.00572 17.4088 5.58347C17.3538 6.13369 17.2713 6.68392 17.1062 7.26166C16.9962 7.67434 16.556 7.89443 16.1433 7.75687C15.8682 7.70185 15.7031 7.50927 15.6206 7.26166Z" fill="#75348A"/>
+                             <path fillRule="evenodd" clipRule="evenodd" d="M30.5319 24.4012C30.3118 24.7314 29.8991 24.8964 29.5415 24.7589C28.7436 24.4838 27.9733 24.1811 27.1755 23.9335C26.3776 23.6584 25.5798 23.4383 24.782 23.1907C24.0117 22.9706 23.2413 22.778 22.471 22.613C22.9937 23.5484 23.5164 24.4838 24.0667 25.4467C24.5619 26.2995 25.0296 27.1799 25.4973 28.0878C25.9375 28.9956 26.4052 29.876 26.7628 30.8114C26.9554 31.2516 26.7353 31.7193 26.3226 31.9118C25.9375 32.0769 25.5248 31.9119 25.3047 31.6092L22.0858 26.6847C21.0129 25.034 19.9399 23.3008 19.0596 21.485C18.757 20.8797 19.0046 20.1369 19.6098 19.8068C19.8574 19.6968 20.1325 19.6417 20.3801 19.6968C22.1409 19.9994 23.8466 20.4396 25.5248 21.0448C26.3501 21.3474 27.1755 21.6776 27.9733 22.0627C28.7712 22.4479 29.5415 22.8331 30.3118 23.3008C30.6419 23.4658 30.7795 23.9885 30.5319 24.4012Z" fill="#146CB5"/>
+                             <path fillRule="evenodd" clipRule="evenodd" d="M13.695 21.4301C12.7871 23.2734 11.7416 25.0066 10.6687 26.6573L7.47736 31.6093C7.22976 31.9945 6.70704 32.1045 6.32188 31.8569C5.96423 31.6368 5.85418 31.1967 5.99174 30.839C6.3769 29.9036 6.81709 28.9957 7.25727 28.0879C7.72497 27.2075 8.19266 26.3271 8.68787 25.4468C9.21058 24.4839 9.76082 23.5485 10.256 22.6131C9.4857 22.8057 8.71538 22.9982 7.94506 23.2183C7.14723 23.4384 6.34939 23.686 5.55155 23.9611C4.75372 24.2087 3.95588 24.5114 3.18556 24.7865C2.74538 24.9516 2.27768 24.7039 2.11261 24.2913C1.97506 23.9061 2.14013 23.4934 2.47027 23.3009C3.21308 22.8332 4.01091 22.448 4.80875 22.0628C5.60658 21.7052 6.43193 21.3475 7.25727 21.0449C8.90796 20.4397 10.6412 19.9995 12.4019 19.6693C13.0622 19.5593 13.7225 19.9995 13.8325 20.6873C13.8325 20.9349 13.805 21.21 13.695 21.4301Z" fill="#2B2E69"/>
+                             <path fillRule="evenodd" clipRule="evenodd" d="M27.698 25.9695C28.2483 26.2446 28.716 26.5747 29.1837 26.9324C29.6514 27.29 30.064 27.6752 30.4767 28.1154C31.302 28.9407 32.0449 29.8486 32.6501 30.894C32.8427 31.2517 32.7051 31.7194 32.3475 31.9119C32.0999 32.0495 31.7973 32.022 31.5497 31.8569C30.6143 31.1966 29.7614 30.4263 28.9636 29.656C28.5509 29.2708 28.1657 28.8582 27.7806 28.4455C27.3954 28.0053 27.0378 27.5651 26.7351 27.0699C26.515 26.7123 26.6251 26.2446 26.9827 26.0245C27.2028 25.8594 27.478 25.8594 27.698 25.9695Z" fill="#146CB5"/>
+                             <path fillRule="evenodd" clipRule="evenodd" d="M5.99167 27.0149C5.68904 27.5101 5.3314 27.9778 4.94624 28.3905C4.56108 28.8032 4.17591 29.2159 3.76324 29.6285C2.93789 30.3989 2.11255 31.1692 1.17716 31.8295C0.847017 32.0771 0.379324 31.9945 0.13172 31.6369C-0.0333488 31.3893 -0.0333522 31.0866 0.0766939 30.839C0.654436 29.7661 1.42476 28.8857 2.22259 28.0329C2.63526 27.6202 3.07545 27.235 3.51563 26.8499C3.98333 26.4922 4.45103 26.1621 5.00126 25.887C5.38642 25.6944 5.8266 25.8595 6.01919 26.2171C6.15674 26.5197 6.12923 26.7949 5.99167 27.0149Z" fill="#2B2E69"/>
+                             <path fillRule="evenodd" clipRule="evenodd" d="M22.3611 6.49124C21.6458 8.00438 20.848 9.49 20.0227 10.9206C19.1973 12.3787 18.3444 13.8093 17.4366 15.2124C17.189 15.57 16.8038 15.7901 16.3911 15.7901C15.9509 15.7901 15.5658 15.5425 15.3457 15.2124C14.4653 13.7818 13.6125 12.3512 12.7871 10.8931C12.3745 10.1778 11.9618 9.43497 11.5766 8.69216C11.1914 7.94935 10.7788 7.20655 10.4211 6.46374C10.2286 6.05106 10.3936 5.55586 10.8063 5.33576C11.1639 5.14318 11.6041 5.28074 11.8242 5.58337C12.3469 6.24364 12.8146 6.93143 13.3098 7.61922C13.805 8.307 14.2727 8.99479 14.7404 9.68258C15.2907 10.5079 15.8409 11.3608 16.3911 12.2136C16.9414 11.3608 17.4916 10.5079 18.0418 9.68258C18.9772 8.27949 19.9401 6.93143 20.9856 5.61088C21.2607 5.25323 21.7834 5.17069 22.1685 5.47332C22.4162 5.72092 22.4987 6.16111 22.3611 6.49124Z" fill="#75348A"/>
+                           </svg>
+                       </div>
+                  </div>
+              </div>
+          </div>
+      </footer>
+    );
+  }
+
 const LuckyWheel = () => {
   const apiKey = ""; 
 
@@ -97,6 +238,9 @@ const LuckyWheel = () => {
       const savedBackgroundSettings = localStorage.getItem('backgroundSettings');
       const savedWinSound = localStorage.getItem('winSound');
       const savedLoseSound = localStorage.getItem('loseSound');
+      const savedFooterSettings = localStorage.getItem('footerSettings');
+      const savedEnableDevToolsProtection = localStorage.getItem('enableDevToolsProtection');
+      const savedWheelStyle = localStorage.getItem('wheelStyle');
       
       return {
         segments: savedSegments ? JSON.parse(savedSegments) : initialSegments,
@@ -117,7 +261,14 @@ const LuckyWheel = () => {
           mobileImage: null
         },
         winSound: savedWinSound || "https://www.soundjay.com/human/sounds/applause-01.mp3",
-        loseSound: savedLoseSound || "https://www.soundjay.com/misc/sounds/fail-trombone-01.mp3"
+        loseSound: savedLoseSound || "https://www.soundjay.com/misc/sounds/fail-trombone-01.mp3",
+        footerSettings: savedFooterSettings ? JSON.parse(savedFooterSettings) : {
+          description: 'مرحبا بكم في خيمة الالعاب .. أسعد مكان يتجول فيه الصغار والكبار متخصص في بيع المنتجات الترفيهية هنا نصنع البهجة',
+          links: [],
+          taxId: '300155258800003'
+        },
+        enableDevToolsProtection: savedEnableDevToolsProtection !== null ? savedEnableDevToolsProtection === 'true' : true,
+        wheelStyle: savedWheelStyle || 'classic'
       };
     } catch (error) {
       console.error('Error loading settings from storage:', error);
@@ -280,6 +431,12 @@ const LuckyWheel = () => {
     return loadedSettings?.googleScriptUrl || '';
   });
 
+  // إعدادات الحماية من Developer Tools
+  const [enableDevToolsProtection, setEnableDevToolsProtection] = useState(loadedSettings?.enableDevToolsProtection !== undefined ? loadedSettings.enableDevToolsProtection : true);
+
+  // شكل العجلة
+  const [wheelStyle, setWheelStyle] = useState(loadedSettings?.wheelStyle || 'classic');
+
   const [socialLinks, setSocialLinks] = useState(loadedSettings?.socialLinks || {
     facebook: '',
     instagram: '',
@@ -287,6 +444,13 @@ const LuckyWheel = () => {
     snapchat: '',
     whatsapp: '',
     website: ''
+  });
+
+  // إعدادات الفوتر
+  const [footerSettings, setFooterSettings] = useState(loadedSettings?.footerSettings || {
+    description: 'مرحبا بكم في خيمة الالعاب .. أسعد مكان يتجول فيه الصغار والكبار متخصص في بيع المنتجات الترفيهية هنا نصنع البهجة',
+    links: [],
+    taxId: '300155258800003'
   });
 
   const [isSpinning, setIsSpinning] = useState(false);
@@ -320,10 +484,13 @@ const LuckyWheel = () => {
   const [tempMaxSpins, setTempMaxSpins] = useState(1);
   const [tempLogo, setTempLogo] = useState(null);
   const [tempSocialLinks, setTempSocialLinks] = useState({ ...socialLinks });
+  const [tempFooterSettings, setTempFooterSettings] = useState({ ...footerSettings });
   const [tempGoogleScriptUrl, setTempGoogleScriptUrl] = useState(googleScriptUrl);
   const [tempWinSound, setTempWinSound] = useState(winSound);
   const [tempLoseSound, setTempLoseSound] = useState(loseSound);
   const [tempBackgroundSettings, setTempBackgroundSettings] = useState(backgroundSettings);
+  const [tempEnableDevToolsProtection, setTempEnableDevToolsProtection] = useState(enableDevToolsProtection);
+  const [tempWheelStyle, setTempWheelStyle] = useState(wheelStyle);
   
   // حالة إدارة الكوبونات داخل الداشبورد
   const [editingCouponsId, setEditingCouponsId] = useState(null); 
@@ -349,8 +516,15 @@ const LuckyWheel = () => {
     }
   };
 
-  // حماية من فتح Developer Tools
+  // حماية من فتح Developer Tools (فقط إذا كان مفعلاً)
   useEffect(() => {
+    if (!enableDevToolsProtection) {
+      console.log('🔓 حماية Developer Tools معطلة');
+      return;
+    }
+
+    console.log('🔒 تفعيل حماية Developer Tools');
+    
     const preventDevTools = () => {
       // منع اختصارات لوحة المفاتيح
       const handleKeyDown = (e) => {
@@ -368,6 +542,18 @@ const LuckyWheel = () => {
         }
         // Ctrl+U (View Source)
         if (e.ctrlKey && e.keyCode === 85) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+        // Ctrl+S (Save Page)
+        if (e.ctrlKey && e.keyCode === 83) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+        // Ctrl+P (Print)
+        if (e.ctrlKey && e.keyCode === 80) {
           e.preventDefault();
           e.stopPropagation();
           return false;
@@ -436,7 +622,7 @@ const LuckyWheel = () => {
     
     const cleanup = preventDevTools();
     return cleanup;
-  }, []);
+  }, [enableDevToolsProtection]);
 
   useEffect(() => {
     spinAudioRef.current = new Audio('https://www.soundjay.com/misc/sounds/drum-roll-01.mp3'); 
@@ -496,6 +682,17 @@ const LuckyWheel = () => {
             whatsapp: '',
             website: ''
           });
+          const loadedFooterSettings = cloudSettings.footerSettings || {
+            description: 'مرحبا بكم في خيمة الالعاب .. أسعد مكان يتجول فيه الصغار والكبار متخصص في بيع المنتجات الترفيهية هنا نصنع البهجة',
+            links: [],
+            taxId: '300155258800003'
+          };
+          setFooterSettings(loadedFooterSettings);
+          console.log('✅ تم تحميل إعدادات الفوتر من السحابة:', {
+            description: loadedFooterSettings.description?.substring(0, 50) + '...',
+            linksCount: loadedFooterSettings.links?.length || 0,
+            taxId: loadedFooterSettings.taxId
+          });
           setBackgroundSettings(cloudSettings.backgroundSettings || {
             type: 'color',
             color: '#0f172a',
@@ -514,6 +711,20 @@ const LuckyWheel = () => {
             setGoogleScriptUrl('');
           }
           
+          // تحديث إعدادات الحماية من Developer Tools
+          if (cloudSettings.enableDevToolsProtection !== undefined) {
+            setEnableDevToolsProtection(cloudSettings.enableDevToolsProtection);
+            localStorage.setItem('enableDevToolsProtection', cloudSettings.enableDevToolsProtection.toString());
+            console.log('✅ تم تحميل إعدادات الحماية من السحابة:', cloudSettings.enableDevToolsProtection ? 'مفعّل' : 'معطّل');
+          }
+          
+          // تحديث شكل العجلة
+          if (cloudSettings.wheelStyle) {
+            setWheelStyle(cloudSettings.wheelStyle);
+            localStorage.setItem('wheelStyle', cloudSettings.wheelStyle);
+            console.log('✅ تم تحميل شكل العجلة من السحابة:', cloudSettings.wheelStyle);
+          }
+          
           // حفظ في localStorage كنسخة احتياطية (باستخدام cleanedSegments)
           localStorage.setItem('wheelSegments', JSON.stringify(cleanedSegments));
           localStorage.setItem('maxSpins', (cloudSettings.maxSpins || 1).toString());
@@ -523,6 +734,11 @@ const LuckyWheel = () => {
             localStorage.removeItem('storeLogo');
           }
           localStorage.setItem('socialLinks', JSON.stringify(cloudSettings.socialLinks || {}));
+          localStorage.setItem('footerSettings', JSON.stringify(cloudSettings.footerSettings || {
+            description: 'مرحبا بكم في خيمة الالعاب .. أسعد مكان يتجول فيه الصغار والكبار متخصص في بيع المنتجات الترفيهية هنا نصنع البهجة',
+            links: [],
+            taxId: '300155258800003'
+          }));
           localStorage.setItem('backgroundSettings', JSON.stringify(cloudSettings.backgroundSettings || {}));
           localStorage.setItem('winSound', cloudSettings.winSound || "");
           localStorage.setItem('loseSound', cloudSettings.loseSound || "");
@@ -547,6 +763,11 @@ const LuckyWheel = () => {
               whatsapp: '',
               website: ''
             });
+            setFooterSettings(localData.footerSettings || {
+              description: 'مرحبا بكم في خيمة الالعاب .. أسعد مكان يتجول فيه الصغار والكبار متخصص في بيع المنتجات الترفيهية هنا نصنع البهجة',
+              links: [],
+              taxId: '300155258800003'
+            });
             setBackgroundSettings(localData.backgroundSettings || {
               type: 'color',
               color: '#0f172a',
@@ -555,6 +776,12 @@ const LuckyWheel = () => {
             });
             setWinSound(localData.winSound || "https://www.soundjay.com/human/sounds/applause-01.mp3");
             setLoseSound(localData.loseSound || "https://www.soundjay.com/misc/sounds/fail-trombone-01.mp3");
+            if (localData.enableDevToolsProtection !== undefined) {
+              setEnableDevToolsProtection(localData.enableDevToolsProtection);
+            }
+            if (localData.wheelStyle) {
+              setWheelStyle(localData.wheelStyle);
+            }
             console.log('📦 تم استخدام البيانات المحلية');
           }
         }
@@ -569,9 +796,20 @@ const LuckyWheel = () => {
           setRemainingSpins(localData.maxSpins || 1);
           setStoreLogo(localData.logo || null);
           setSocialLinks(localData.socialLinks || {});
+          setFooterSettings(localData.footerSettings || {
+            description: 'مرحبا بكم في خيمة الالعاب .. أسعد مكان يتجول فيه الصغار والكبار متخصص في بيع المنتجات الترفيهية هنا نصنع البهجة',
+            links: [],
+            taxId: '300155258800003'
+          });
           setBackgroundSettings(localData.backgroundSettings || {});
           setWinSound(localData.winSound || "");
           setLoseSound(localData.loseSound || "");
+          if (localData.enableDevToolsProtection !== undefined) {
+            setEnableDevToolsProtection(localData.enableDevToolsProtection);
+          }
+          if (localData.wheelStyle) {
+            setWheelStyle(localData.wheelStyle);
+          }
         }
       } finally {
         setIsLoadingSettings(false);
@@ -1054,11 +1292,14 @@ const LuckyWheel = () => {
       setTempMaxSpins(maxSpins);
       setTempLogo(storeLogo);
       setTempSocialLinks({ ...socialLinks });
+      setTempFooterSettings({ ...footerSettings });
       // تحميل رابط Google Script من السحابة أولاً
       setTempGoogleScriptUrl(googleScriptUrl);
       setTempWinSound(winSound);
       setTempLoseSound(loseSound);
       setTempBackgroundSettings(backgroundSettings);
+      setTempEnableDevToolsProtection(enableDevToolsProtection);
+      setTempWheelStyle(wheelStyle);
       setShowDashboard(true);
   };
 
@@ -1200,6 +1441,7 @@ const LuckyWheel = () => {
       setRemainingSpins(tempMaxSpins);
       setStoreLogo(tempLogo);
       setSocialLinks(tempSocialLinks);
+      setFooterSettings(tempFooterSettings);
       
       setGoogleScriptUrl(tempGoogleScriptUrl);
       // لا نحفظ في localStorage - فقط في Supabase
@@ -1211,6 +1453,12 @@ const LuckyWheel = () => {
       setWinSound(tempWinSound);
       setLoseSound(tempLoseSound);
 
+      // حفظ إعدادات الحماية
+      setEnableDevToolsProtection(tempEnableDevToolsProtection);
+
+      // حفظ شكل العجلة
+      setWheelStyle(tempWheelStyle);
+
       // حفظ جميع البيانات في localStorage كنسخة احتياطية
       localStorage.setItem('wheelSegments', JSON.stringify(tempSegments));
       localStorage.setItem('maxSpins', tempMaxSpins.toString());
@@ -1220,21 +1468,33 @@ const LuckyWheel = () => {
         localStorage.removeItem('storeLogo');
       }
       localStorage.setItem('socialLinks', JSON.stringify(tempSocialLinks));
+      localStorage.setItem('footerSettings', JSON.stringify(tempFooterSettings));
       localStorage.setItem('backgroundSettings', JSON.stringify(tempBackgroundSettings));
       localStorage.setItem('winSound', tempWinSound);
       localStorage.setItem('loseSound', tempLoseSound);
+      localStorage.setItem('enableDevToolsProtection', tempEnableDevToolsProtection.toString());
+      localStorage.setItem('wheelStyle', tempWheelStyle);
 
-      // حفظ البيانات في السحابة (Google Sheets) لجميع المستخدمين
+      // حفظ البيانات في السحابة (Supabase) لجميع المستخدمين
       const settingsToSave = {
         segments: tempSegments,
         maxSpins: tempMaxSpins,
         logo: tempLogo,
         socialLinks: tempSocialLinks,
+        footerSettings: tempFooterSettings,
         backgroundSettings: tempBackgroundSettings,
         winSound: tempWinSound,
         loseSound: tempLoseSound,
-        googleScriptUrl: tempGoogleScriptUrl
+        googleScriptUrl: tempGoogleScriptUrl,
+        enableDevToolsProtection: tempEnableDevToolsProtection,
+        wheelStyle: tempWheelStyle
       };
+      
+      console.log('💾 جاري حفظ إعدادات الفوتر في السحابة:', {
+        description: tempFooterSettings.description?.substring(0, 50) + '...',
+        linksCount: tempFooterSettings.links?.length || 0,
+        taxId: tempFooterSettings.taxId
+      });
       
       const saved = await saveSettingsToCloud(settingsToSave);
       
@@ -1245,7 +1505,10 @@ const LuckyWheel = () => {
       
       // إشعار المستخدم أن البيانات تم حفظها
       if (saved) {
-        alert('✅ تم حفظ الإعدادات بنجاح في السحابة! جميع المستخدمين سيرون نفس البيانات.');
+        const footerInfo = tempFooterSettings.links?.length > 0 
+          ? `\n\n📌 تم حفظ ${tempFooterSettings.links.length} رابط مهم في الفوتر` 
+          : '';
+        alert(`✅ تم حفظ الإعدادات بنجاح في السحابة! جميع المستخدمين سيرون نفس البيانات.${footerInfo}`);
       } else {
         alert('⚠️ تم حفظ الإعدادات محلياً، لكن حدث خطأ في الحفظ السحابي. يرجى المحاولة مرة أخرى.');
       }
@@ -1336,7 +1599,7 @@ const LuckyWheel = () => {
 
   return (
     <div 
-      className="min-h-screen flex flex-col items-center justify-center p-4 font-sans text-slate-100 overflow-hidden relative transition-all duration-500 main-container" 
+      className="min-h-screen flex flex-col items-center justify-start p-0 font-sans text-slate-100 overflow-y-auto overflow-x-hidden relative transition-all duration-500 main-container" 
       dir="rtl"
       style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}
     >
@@ -1442,6 +1705,75 @@ const LuckyWheel = () => {
                                               onChange={(e) => setTempMaxSpins(parseInt(e.target.value) || 1)}
                                               className="w-20 px-3 py-2 border-2 border-blue-200 rounded-lg text-center font-bold text-lg outline-none focus:border-blue-500 bg-white"
                                           />
+                                      </div>
+                                  </div>
+
+                                  {/* --- شكل العجلة --- */}
+                                  <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 md:col-span-2">
+                                      <h3 className="font-bold text-slate-800 flex items-center gap-2 mb-4"><RotateCw className="text-purple-600" /> شكل العجلة</h3>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <button
+                                              onClick={() => setTempWheelStyle('classic')}
+                                              className={`p-4 rounded-xl border-2 transition-all ${
+                                                  tempWheelStyle === 'classic'
+                                                      ? 'border-purple-500 bg-purple-50'
+                                                      : 'border-slate-200 hover:border-purple-300'
+                                              }`}
+                                          >
+                                              <div className="text-center">
+                                                  <div className="w-24 h-24 mx-auto mb-2 rounded-full bg-gradient-to-b from-yellow-600 to-yellow-800 border-4 border-yellow-900 flex items-center justify-center">
+                                                      <div className="w-20 h-20 rounded-full bg-white"></div>
+                                                  </div>
+                                                  <p className="font-bold text-slate-800">كلاسيكي</p>
+                                                  <p className="text-xs text-slate-500 mt-1">الشكل التقليدي</p>
+                                              </div>
+                                          </button>
+                                          <button
+                                              onClick={() => setTempWheelStyle('modern')}
+                                              className={`p-4 rounded-xl border-2 transition-all ${
+                                                  tempWheelStyle === 'modern'
+                                                      ? 'border-purple-500 bg-purple-50'
+                                                      : 'border-slate-200 hover:border-purple-300'
+                                              }`}
+                                          >
+                                              <div className="text-center">
+                                                  <div className="w-24 h-24 mx-auto mb-2 relative">
+                                                      <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 467 501" fill="none" className="w-full h-full">
+                                                          <g filter="url(#filter0_i_27_286)">
+                                                              <path d="M464.63 265.863C465.362 393.747 362.285 498.011 234.401 498.743C106.517 499.475 2.25341 396.398 1.52151 268.514C0.789611 140.63 103.867 36.3664 231.751 35.6345C359.634 34.9026 463.898 137.98 464.63 265.863ZM25.1857 268.379C25.8428 383.193 119.451 475.736 234.266 475.079C349.08 474.422 441.623 380.813 440.966 265.999C440.309 151.184 346.7 58.6416 231.886 59.2987C117.071 59.9558 24.5286 153.564 25.1857 268.379Z" fill="#2BD0EE"/>
+                                                          </g>
+                                                          <g filter="url(#filter1_d_27_286)">
+                                                              <path d="M234.171 80.9687L191.344 16.7235L276.259 16.2375L234.171 80.9687Z" fill="#189CD7"/>
+                                                          </g>
+                                                          <defs>
+                                                              <filter id="filter0_i_27_286" x="1.51758" y="35.6306" width="463.116" height="463.116" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                                                                  <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+                                                                  <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                                                                  <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                                                                  <feMorphology radius="6.03409" operator="erode" in="SourceAlpha" result="effect1_innerShadow_27_286"/>
+                                                                  <feOffset/>
+                                                                  <feGaussianBlur stdDeviation="3.01704"/>
+                                                                  <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+                                                                  <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+                                                                  <feBlend mode="normal" in2="shape" result="effect1_innerShadow_27_286"/>
+                                                              </filter>
+                                                              <filter id="filter1_d_27_286" x="185.31" y="10.2033" width="96.9837" height="76.7994" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                                                                  <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+                                                                  <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                                                                  <feOffset/>
+                                                                  <feGaussianBlur stdDeviation="3.01704"/>
+                                                                  <feComposite in2="hardAlpha" operator="out"/>
+                                                                  <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+                                                                  <feBlend mode="normal" in="BackgroundImageFix" result="effect1_dropShadow_27_286"/>
+                                                                  <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_27_286" result="shape"/>
+                                                              </filter>
+                                                          </defs>
+                                                      </svg>
+                                                  </div>
+                                                  <p className="font-bold text-slate-800">حديث</p>
+                                                  <p className="text-xs text-slate-500 mt-1">شكل عصري مع مؤشر</p>
+                                              </div>
+                                          </button>
                                       </div>
                                   </div>
                               </div>
@@ -1578,6 +1910,32 @@ const LuckyWheel = () => {
                                               ⚠️ مهم: تأكد من أن "Who has access" = "Anyone" عند النشر
                                           </p>
                                       </div>
+                                      
+                                      {/* إعدادات الحماية من Developer Tools */}
+                                      <div className="p-4 bg-slate-50 rounded-xl border-2 border-slate-200">
+                                          <div className="flex items-center justify-between mb-2">
+                                              <div className="flex items-center gap-2">
+                                                  <Lock className="text-slate-600" size={18} />
+                                                  <label className="font-bold text-slate-700">حماية من فتح Developer Tools</label>
+                                              </div>
+                                              <label className="relative inline-flex items-center cursor-pointer">
+                                                  <input 
+                                                      type="checkbox" 
+                                                      checked={tempEnableDevToolsProtection}
+                                                      onChange={(e) => setTempEnableDevToolsProtection(e.target.checked)}
+                                                      className="sr-only peer"
+                                                  />
+                                                  <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                              </label>
+                                          </div>
+                                          <p className="text-xs text-slate-500 mt-2">
+                                              {tempEnableDevToolsProtection ? (
+                                                  <span className="text-green-600">✅ الحماية مفعّلة - سيتم منع فتح Developer Tools</span>
+                                              ) : (
+                                                  <span className="text-orange-600">⚠️ الحماية معطّلة - يمكن فتح Developer Tools</span>
+                                              )}
+                                          </p>
+                                      </div>
                                   </div>
                               </div>
 
@@ -1609,6 +1967,101 @@ const LuckyWheel = () => {
                                       <div className="flex items-center gap-2 md:col-span-2">
                                           <Globe className="text-slate-500" />
                                           <input type="text" placeholder="رابط الموقع الإلكتروني" className="flex-1 p-2 border rounded-lg text-sm" value={tempSocialLinks.website} onChange={e => setTempSocialLinks({...tempSocialLinks, website: e.target.value})} />
+                                      </div>
+                                  </div>
+                              </div>
+
+                              {/* --- إعدادات الفوتر --- */}
+                              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+                                  <h3 className="font-bold text-slate-800 flex items-center gap-2 mb-4"><LinkIcon className="text-cyan-500" /> إعدادات الفوتر</h3>
+                                  
+                                  {/* وصف الفوتر */}
+                                  <div className="mb-6">
+                                      <label className="block text-sm font-bold text-slate-700 mb-2">النص تحت اللوجو</label>
+                                      <textarea 
+                                          value={tempFooterSettings.description || ''}
+                                          onChange={(e) => setTempFooterSettings({...tempFooterSettings, description: e.target.value})}
+                                          placeholder="أدخل النص الذي سيظهر تحت اللوجو في الفوتر"
+                                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-sm focus:border-cyan-500 outline-none resize-none h-24"
+                                          dir="rtl"
+                                      />
+                                  </div>
+
+                                  {/* الرقم الضريبي */}
+                                  <div className="mb-6">
+                                      <label className="block text-sm font-bold text-slate-700 mb-2">الرقم الضريبي</label>
+                                      <input 
+                                          type="text" 
+                                          value={tempFooterSettings.taxId || ''}
+                                          onChange={(e) => setTempFooterSettings({...tempFooterSettings, taxId: e.target.value})}
+                                          placeholder="300155258800003"
+                                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-sm font-mono focus:border-cyan-500 outline-none"
+                                          dir="ltr"
+                                      />
+                                  </div>
+
+                                  {/* روابط الفوتر */}
+                                  <div>
+                                      <div className="flex justify-between items-center mb-3">
+                                          <label className="block text-sm font-bold text-slate-700">روابط تهمك</label>
+                                          <button 
+                                              onClick={() => setTempFooterSettings({
+                                                  ...tempFooterSettings, 
+                                                  links: [...(tempFooterSettings.links || []), { label: '', url: '' }]
+                                              })}
+                                              className="bg-cyan-500 hover:bg-cyan-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1"
+                                          >
+                                              <Plus size={14} /> إضافة رابط
+                                          </button>
+                                      </div>
+                                      
+                                      <div className="space-y-3">
+                                          {(tempFooterSettings.links || []).map((link, index) => (
+                                              <div key={index} className="flex gap-2 items-center bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                                  <div className="flex-1 grid grid-cols-2 gap-2">
+                                                      <input 
+                                                          type="text" 
+                                                          value={link.label || ''}
+                                                          onChange={(e) => {
+                                                              const newLinks = [...(tempFooterSettings.links || [])];
+                                                              newLinks[index] = {...newLinks[index], label: e.target.value};
+                                                              setTempFooterSettings({...tempFooterSettings, links: newLinks});
+                                                          }}
+                                                          placeholder="اسم الرابط (مثال: المدونة)"
+                                                          className="p-2 border border-slate-300 rounded text-sm focus:border-cyan-500 outline-none"
+                                                          dir="rtl"
+                                                      />
+                                                      <input 
+                                                          type="text" 
+                                                          value={link.url || ''}
+                                                          onChange={(e) => {
+                                                              const newLinks = [...(tempFooterSettings.links || [])];
+                                                              newLinks[index] = {...newLinks[index], url: e.target.value};
+                                                              setTempFooterSettings({...tempFooterSettings, links: newLinks});
+                                                          }}
+                                                          placeholder="الرابط (مثال: https://example.com)"
+                                                          className="p-2 border border-slate-300 rounded text-sm font-mono focus:border-cyan-500 outline-none"
+                                                          dir="ltr"
+                                                      />
+                                                  </div>
+                                                  <button 
+                                                      onClick={() => {
+                                                          const newLinks = (tempFooterSettings.links || []).filter((_, i) => i !== index);
+                                                          setTempFooterSettings({...tempFooterSettings, links: newLinks});
+                                                      }}
+                                                      className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                                                      title="حذف"
+                                                  >
+                                                      <Trash2 size={18} />
+                                                  </button>
+                                              </div>
+                                          ))}
+                                          
+                                          {(!tempFooterSettings.links || tempFooterSettings.links.length === 0) && (
+                                              <p className="text-sm text-slate-400 text-center py-4 border-2 border-dashed border-slate-200 rounded-lg">
+                                                  لا توجد روابط. اضغط على "إضافة رابط" لإضافة رابط جديد.
+                                              </p>
+                                          )}
                                       </div>
                                   </div>
                               </div>
@@ -1705,8 +2158,10 @@ const LuckyWheel = () => {
         </div>
       )}
 
-      {/* Header */}
-      <header className="mb-8 text-center relative z-10">
+      {/* Main Content Container with Padding for Header */}
+      <div className="w-full flex flex-col items-center justify-center min-h-[calc(100vh-350px)] py-12">
+          {/* Header */}
+          <header className="mb-8 text-center relative z-10">
         {storeLogo ? (
             <div className="mb-6 relative inline-block animate-fade-in">
                 <div className="absolute inset-0 bg-yellow-400 blur-2xl opacity-20 rounded-full"></div>
@@ -1741,38 +2196,107 @@ const LuckyWheel = () => {
       <div className={`flex flex-col justify-center lg:flex-row items-center gap-12 w-full max-w-6xl relative z-10 transition-all duration-500 ${showRegistrationModal || showDashboard ? 'opacity-40 blur-sm pointer-events-none' : 'opacity-100'}`}>
         
         {/* === Wheel Section === */}
-        <div className="relative group perspective-1000 transform hover:scale-[1.02] transition-transform duration-500">
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-30 drop-shadow-xl filter"><div className="w-14 h-16 bg-red-600 clip-path-pointer shadow-lg relative border-t-4 border-red-800"><div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-red-900 rounded-full mt-1"></div></div></div>
-          <div className="w-[340px] h-[340px] md:w-[420px] md:h-[420px] rounded-full bg-gradient-to-b from-yellow-600 to-yellow-800 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-center relative border-4 border-yellow-900">
-             <div className="w-[300px] h-[300px] md:w-[380px] md:h-[380px] rounded-full shadow-inner relative overflow-hidden transition-transform duration-[4500ms] cubic-bezier(0.15, 0, 0.15, 1) z-10 bg-white" style={{ transform: `rotate(${rotation}deg)` }}>
-                <svg viewBox="0 0 100 100" className="w-full h-full">
-                  {segments.map((segment, index) => {
-                    const isUsed = !availableIds.includes(segment.id);
-                    const startAngle = index * segmentSize;
-                    const endAngle = (index + 1) * segmentSize;
-                    return (<g key={segment.id}><path d={describeArc(startAngle, endAngle)} fill={isUsed ? '#cbd5e1' : segment.color} stroke="white" strokeWidth="0.5" style={{ filter: isUsed ? 'grayscale(100%)' : 'none', opacity: isUsed ? 0.8 : 1, transition: 'fill 0.3s' }} /></g>);
-                  })}
-                  {segments.map((segment, index) => {
-                     const isUsed = !availableIds.includes(segment.id);
-                     const midAngle = (index * segmentSize) + (segmentSize / 2);
-                     const rad = (midAngle - 90) * (Math.PI / 180);
-                     const tx = 50 + 32 * Math.cos(rad);
-                     const ty = 50 + 32 * Math.sin(rad);
-                     return (<g key={`text-${segment.id}`} transform={`translate(${tx}, ${ty}) rotate(${midAngle + 90})`} style={{ pointerEvents: 'none' }}><text textAnchor="middle" dominantBaseline="middle" fill={isUsed ? '#64748b' : 'white'} fontSize={Math.min(4.5, 30 / segment.text.length + 2)} fontWeight="900" style={{ textShadow: isUsed ? 'none' : '0px 1px 2px rgba(0,0,0,0.5)', fontFamily: 'sans-serif' }}>{segment.value}</text>{!isUsed && (<text y="7" textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="4">{segment.type === 'luck' ? '✖' : '★'}</text>)}</g>);
-                  })}
-                </svg>
-             </div>
-             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
-                <button onClick={spinWheel} disabled={isSpinning || availableIds.length === 0 || remainingSpins <= 0} className={`w-20 h-20 rounded-full flex items-center justify-center shadow-[0_5px_0_rgba(0,0,0,0.2),0_10px_20px_rgba(0,0,0,0.4)] border-[6px] border-white transition-all duration-150 transform active:translate-y-1 active:shadow-none ${availableIds.length === 0 || remainingSpins <= 0 ? 'bg-slate-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 text-white'}`}><span className="font-black text-lg uppercase tracking-wider">{availableIds.length === 0 ? "END" : (remainingSpins <= 0 ? "تم" : "SPIN")}</span></button>
-             </div>
-             {[...Array(16)].map((_, i) => {
-                const angleDeg = (i * (360 / 16)); const angleRad = (angleDeg * Math.PI) / 180; const radiusPercent = 47; const left = 50 + radiusPercent * Math.cos(angleRad); const top = 50 + radiusPercent * Math.sin(angleRad);
-                let isActive = false; let lampColor = 'bg-white'; let shadowColor = 'rgba(255,255,255,0.8)';
-                if (isSpinning) { if (lightIndex === 0) { isActive = i % 2 === 0; lampColor = isActive ? 'bg-yellow-300' : 'bg-red-500'; shadowColor = isActive ? '#FCD34D' : '#EF4444'; } else { isActive = i % 2 !== 0; lampColor = isActive ? 'bg-blue-400' : 'bg-green-500'; shadowColor = isActive ? '#60A5FA' : '#10B981'; } } else { isActive = (i + lightIndex) % 2 === 0; lampColor = isActive ? 'bg-white' : 'bg-yellow-200'; }
-                return (<div key={i} className={`absolute w-3 h-3 md:w-4 md:h-4 rounded-full border border-slate-200 transition-colors duration-200 ${lampColor}`} style={{ left: `${left}%`, top: `${top}%`, transform: 'translate(-50%, -50%)', boxShadow: isActive ? `0 0 10px 2px ${shadowColor}` : 'none' }}></div>);
-             })}
+        {wheelStyle === 'classic' ? (
+          <div className="relative group perspective-1000 transform hover:scale-[1.02] transition-transform duration-500">
+            <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-30 drop-shadow-xl filter"><div className="w-14 h-16 bg-red-600 clip-path-pointer shadow-lg relative border-t-4 border-red-800"><div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-red-900 rounded-full mt-1"></div></div></div>
+            <div className="w-[340px] h-[340px] md:w-[420px] md:h-[420px] rounded-full bg-gradient-to-b from-yellow-600 to-yellow-800 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-center relative border-4 border-yellow-900">
+               <div className="w-[300px] h-[300px] md:w-[380px] md:h-[380px] rounded-full shadow-inner relative overflow-hidden transition-transform duration-[4500ms] cubic-bezier(0.15, 0, 0.15, 1) z-10 bg-white" style={{ transform: `rotate(${rotation}deg)` }}>
+                  <svg viewBox="0 0 100 100" className="w-full h-full">
+                    {segments.map((segment, index) => {
+                      const isUsed = !availableIds.includes(segment.id);
+                      const startAngle = index * segmentSize;
+                      const endAngle = (index + 1) * segmentSize;
+                      return (<g key={segment.id}><path d={describeArc(startAngle, endAngle)} fill={isUsed ? '#cbd5e1' : segment.color} stroke="white" strokeWidth="0.5" style={{ filter: isUsed ? 'grayscale(100%)' : 'none', opacity: isUsed ? 0.8 : 1, transition: 'fill 0.3s' }} /></g>);
+                    })}
+                    {segments.map((segment, index) => {
+                       const isUsed = !availableIds.includes(segment.id);
+                       const midAngle = (index * segmentSize) + (segmentSize / 2);
+                       const rad = (midAngle - 90) * (Math.PI / 180);
+                       const tx = 50 + 32 * Math.cos(rad);
+                       const ty = 50 + 32 * Math.sin(rad);
+                       return (<g key={`text-${segment.id}`} transform={`translate(${tx}, ${ty}) rotate(${midAngle + 90})`} style={{ pointerEvents: 'none' }}><text textAnchor="middle" dominantBaseline="middle" fill={isUsed ? '#64748b' : 'white'} fontSize={Math.min(4.5, 30 / segment.text.length + 2)} fontWeight="900" style={{ textShadow: isUsed ? 'none' : '0px 1px 2px rgba(0,0,0,0.5)', fontFamily: 'sans-serif' }}>{segment.value}</text>{!isUsed && (<text y="7" textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="4">{segment.type === 'luck' ? '✖' : '★'}</text>)}</g>);
+                    })}
+                  </svg>
+               </div>
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                  <button onClick={spinWheel} disabled={isSpinning || availableIds.length === 0 || remainingSpins <= 0} className={`w-20 h-20 rounded-full flex items-center justify-center shadow-[0_5px_0_rgba(0,0,0,0.2),0_10px_20px_rgba(0,0,0,0.4)] border-[6px] border-white transition-all duration-150 transform active:translate-y-1 active:shadow-none ${availableIds.length === 0 || remainingSpins <= 0 ? 'bg-slate-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 text-white'}`}><span className="font-black text-lg uppercase tracking-wider">{availableIds.length === 0 ? "END" : (remainingSpins <= 0 ? "تم" : "SPIN")}</span></button>
+               </div>
+               {[...Array(16)].map((_, i) => {
+                  const angleDeg = (i * (360 / 16)); const angleRad = (angleDeg * Math.PI) / 180; const radiusPercent = 47; const left = 50 + radiusPercent * Math.cos(angleRad); const top = 50 + radiusPercent * Math.sin(angleRad);
+                  let isActive = false; let lampColor = 'bg-white'; let shadowColor = 'rgba(255,255,255,0.8)';
+                  if (isSpinning) { if (lightIndex === 0) { isActive = i % 2 === 0; lampColor = isActive ? 'bg-yellow-300' : 'bg-red-500'; shadowColor = isActive ? '#FCD34D' : '#EF4444'; } else { isActive = i % 2 !== 0; lampColor = isActive ? 'bg-blue-400' : 'bg-green-500'; shadowColor = isActive ? '#60A5FA' : '#10B981'; } } else { isActive = (i + lightIndex) % 2 === 0; lampColor = isActive ? 'bg-white' : 'bg-yellow-200'; }
+                  return (<div key={i} className={`absolute w-3 h-3 md:w-4 md:h-4 rounded-full border border-slate-200 transition-colors duration-200 ${lampColor}`} style={{ left: `${left}%`, top: `${top}%`, transform: 'translate(-50%, -50%)', boxShadow: isActive ? `0 0 10px 2px ${shadowColor}` : 'none' }}></div>);
+               })}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="relative w-[350px] md:w-[467px] aspect-[467/501] mx-auto transform hover:scale-[1.02] transition-transform duration-500">
+            
+            {/* Spinner Layer (Behind the Frame) */}
+            <div 
+              className="absolute left-[5.5%] top-[11.8%] w-[89%] aspect-square rounded-full overflow-hidden z-0" 
+              style={{ 
+                transform: `rotate(${rotation}deg)`, 
+                transition: isSpinning ? 'transform 4.5s cubic-bezier(0.15, 0, 0.15, 1)' : 'none'
+              }}
+            >
+               <svg viewBox="0 0 100 100" className="w-full h-full">
+                 {segments.map((segment, index) => {
+                   const isUsed = !availableIds.includes(segment.id);
+                   const startAngle = index * segmentSize;
+                   const endAngle = (index + 1) * segmentSize;
+                   return (<g key={segment.id}><path d={describeArc(startAngle, endAngle)} fill={isUsed ? '#cbd5e1' : segment.color} stroke="white" strokeWidth="0.5" style={{ filter: isUsed ? 'grayscale(100%)' : 'none', opacity: isUsed ? 0.8 : 1, transition: 'fill 0.3s' }} /></g>);
+                 })}
+                 {segments.map((segment, index) => {
+                    const isUsed = !availableIds.includes(segment.id);
+                    const midAngle = (index * segmentSize) + (segmentSize / 2);
+                    const rad = (midAngle - 90) * (Math.PI / 180);
+                    const tx = 50 + 32 * Math.cos(rad);
+                    const ty = 50 + 32 * Math.sin(rad);
+                    return (<g key={`text-${segment.id}`} transform={`translate(${tx}, ${ty}) rotate(${midAngle + 90})`} style={{ pointerEvents: 'none' }}><text textAnchor="middle" dominantBaseline="middle" fill={isUsed ? '#64748b' : 'white'} fontSize={Math.min(4.5, 30 / segment.text.length + 2)} fontWeight="900" style={{ textShadow: isUsed ? 'none' : '0px 1px 2px rgba(0,0,0,0.5)', fontFamily: 'sans-serif' }}>{segment.value}</text>{!isUsed && (<text y="7" textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="4">{segment.type === 'luck' ? '✖' : '★'}</text>)}</g>);
+                 })}
+               </svg>
+            </div>
+
+            {/* Frame Layer (Overlay) */}
+            <svg className="absolute top-0 left-0 w-full h-full z-10 pointer-events-none drop-shadow-xl" viewBox="0 0 467 501" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g filter="url(#filter0_i_27_286)">
+                <path d="M464.63 265.863C465.362 393.747 362.285 498.011 234.401 498.743C106.517 499.475 2.25341 396.398 1.52151 268.514C0.789611 140.63 103.867 36.3664 231.751 35.6345C359.634 34.9026 463.898 137.98 464.63 265.863ZM25.1857 268.379C25.8428 383.193 119.451 475.736 234.266 475.079C349.08 474.422 441.623 380.813 440.966 265.999C440.309 151.184 346.7 58.6416 231.886 59.2987C117.071 59.9558 24.5286 153.564 25.1857 268.379Z" fill="#2BD0EE"/>
+              </g>
+              <g filter="url(#filter1_d_27_286)">
+                <path d="M234.171 80.9687L191.344 16.7235L276.259 16.2375L234.171 80.9687Z" fill="#189CD7"/>
+              </g>
+              <defs>
+                <filter id="filter0_i_27_286" x="1.51758" y="35.6306" width="463.116" height="463.116" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                  <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+                  <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                  <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                  <feMorphology radius="6.03409" operator="erode" in="SourceAlpha" result="effect1_innerShadow_27_286"/>
+                  <feOffset/>
+                  <feGaussianBlur stdDeviation="3.01704"/>
+                  <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+                  <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+                  <feBlend mode="normal" in2="shape" result="effect1_innerShadow_27_286"/>
+                </filter>
+                <filter id="filter1_d_27_286" x="185.31" y="10.2033" width="96.9837" height="76.7994" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                  <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+                  <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                  <feOffset/>
+                  <feGaussianBlur stdDeviation="3.01704"/>
+                  <feComposite in2="hardAlpha" operator="out"/>
+                  <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+                  <feBlend mode="normal" in="BackgroundImageFix" result="effect1_dropShadow_27_286"/>
+                  <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_27_286" result="shape"/>
+                </filter>
+              </defs>
+            </svg>
+
+            {/* Spin Button (Centered relative to the wheel circle) */}
+            <div className="absolute z-20 top-[53.3%] left-1/2 -translate-x-1/2 -translate-y-1/2">
+               <button onClick={spinWheel} disabled={isSpinning || availableIds.length === 0 || remainingSpins <= 0} className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-[0_5px_0_rgba(0,0,0,0.2),0_10px_20px_rgba(0,0,0,0.4)] border-[4px] md:border-[6px] border-white transition-all duration-150 transform active:translate-y-1 active:shadow-none ${availableIds.length === 0 || remainingSpins <= 0 ? 'bg-slate-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 text-white'}`}><span className="font-black text-sm md:text-lg uppercase tracking-wider">{availableIds.length === 0 ? "END" : (remainingSpins <= 0 ? "تم" : "SPIN")}</span></button>
+            </div>
+          </div>
+        )}
 
         {/* === Dashboard === */}
         <div className="flex-1 w-full max-w-md bg-white text-slate-800 p-6 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] border-4 border-slate-200">
@@ -1810,6 +2334,7 @@ const LuckyWheel = () => {
              </div>
           </div>
         </div>
+      </div>
       </div>
 
       {/* === Winner Modal === */}
@@ -1852,6 +2377,8 @@ const LuckyWheel = () => {
           </div>
         </div>
       )}
+
+      <Footer logo={storeLogo} socialLinks={socialLinks} footerSettings={footerSettings} />
 
       <style>{`.clip-path-pointer { clip-path: polygon(50% 100%, 0 0, 100% 0); } .perspective-1000 { perspective: 1000px; } .animate-spin-slow { animation: spin 3s linear infinite; } @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in-up { animation: fadeInUp 0.4s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } } .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; } @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 70% { transform: scale(0.9); } 100% { transform: scale(1); } } .animate-bounce-in { animation: bounceIn 0.5s cubic-bezier(0.215, 0.610, 0.355, 1.000); }`}</style>
     </div>
