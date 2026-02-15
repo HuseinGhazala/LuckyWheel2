@@ -39,9 +39,10 @@ function loadEnv() {
 const env = loadEnv();
 const supabaseUrl = env.VITE_SUPABASE_URL || '';
 const supabaseKey = env.VITE_SUPABASE_ANON_KEY || '';
+const apiOnly = process.argv[2] === '--api';
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error('❌ VITE_SUPABASE_URL و VITE_SUPABASE_ANON_KEY مطلوبان في .env');
+if (apiOnly && (!supabaseUrl || !supabaseKey)) {
+  console.error('❌ مع --api: VITE_SUPABASE_URL و VITE_SUPABASE_ANON_KEY مطلوبان في .env');
   process.exit(1);
 }
 
@@ -49,9 +50,12 @@ console.log('🚀 تشغيل اختبار التحميل...');
 console.log('   URL:', supabaseUrl);
 console.log('   اضغط Ctrl+C للإيقاف\n');
 
+const script = process.argv[2] === '--api' ? 'k6-load-test.js' : 'k6-load-test-website.js';
+
 const k6 = spawn('k6', [
   'run',
-  resolve(__dirname, 'k6-load-test.js'),
+  resolve(__dirname, script),
+  '-e', `SITE_URL=https://lightslategrey-hawk-924323.hostingersite.com`,
   '-e', `SUPABASE_URL=${supabaseUrl}`,
   '-e', `SUPABASE_ANON_KEY=${supabaseKey}`,
 ], {

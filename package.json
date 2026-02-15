@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "load-test": "node load-test/run-load-test.js"
+    "load-test": "node load-test/run-load-test.js",
+    "load-test:api": "node load-test/run-load-test.js --api"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.95.3",

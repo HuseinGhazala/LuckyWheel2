@@ -1,6 +1,21 @@
 # اختبار التحميل - عجلة الحظ
 ## Load Testing - Lucky Wheel
 
+### اختبار الموقع المنشور
+**الموقع:** https://lightslategrey-hawk-924323.hostingersite.com/
+
+```bash
+npm run load-test
+```
+يختبر: Hostinger (الصفحة) + Supabase (API)
+
+### اختبار Supabase فقط
+```bash
+npm run load-test:api
+```
+
+---
+
 اختبار قدرة Supabase على استقبال الطلبات عند عدد كبير من العملاء.
 
 ---
