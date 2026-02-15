@@ -1,16 +1,20 @@
 import { createClient } from '@supabase/supabase-js'
 
-// إعدادات Supabase - استبدل هذه القيم بقيمك من Supabase Dashboard
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'YOUR_SUPABASE_URL'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY'
+// إعدادات Supabase - استبدل هذه القيم بقيمك من Supabase Dashboard أو أنشئ ملف .env
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-// إنشاء Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// إنشاء Supabase client فقط إذا كانت القيم صالحة (URL يبدأ بـ http:// أو https://)
+const isValidUrl = (url) => typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))
+export const supabase = isValidUrl(supabaseUrl) && supabaseAnonKey
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null
 
 // دوال مساعدة للتعامل مع البيانات
 
 // جلب الإعدادات من Supabase
 export const getSettings = async () => {
+  if (!supabase) return null
   try {
     const { data, error } = await supabase
       .from('settings')
@@ -32,6 +36,7 @@ export const getSettings = async () => {
 
 // حفظ الإعدادات في Supabase
 export const saveSettings = async (settings) => {
+  if (!supabase) return false
   try {
     const { data, error } = await supabase
       .from('settings')
@@ -55,6 +60,7 @@ export const saveSettings = async (settings) => {
 
 // حفظ بيانات المستخدم
 export const saveUserData = async (userData) => {
+  if (!supabase) return false
   try {
     const { data, error } = await supabase
       .from('user_data')
@@ -79,6 +85,7 @@ export const saveUserData = async (userData) => {
 
 // حفظ بيانات الجائزة الفائزة
 export const saveWinData = async (winData) => {
+  if (!supabase) return false
   try {
     const { data, error } = await supabase
       .from('wins')
@@ -105,6 +112,7 @@ export const saveWinData = async (winData) => {
 
 // جلب جميع بيانات المستخدمين
 export const getAllUserData = async () => {
+  if (!supabase) return []
   try {
     const { data, error } = await supabase
       .from('user_data')
@@ -125,6 +133,7 @@ export const getAllUserData = async () => {
 
 // جلب جميع الجوائز الفائزة
 export const getAllWins = async () => {
+  if (!supabase) return []
   try {
     const { data, error } = await supabase
       .from('wins')
