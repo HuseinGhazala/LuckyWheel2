@@ -22,6 +22,13 @@ import Footer from './components/Footer.jsx';
 import RegistrationModal from './components/RegistrationModal.jsx';
 import WinnerModal from './components/WinnerModal.jsx';
 import DashboardPanel from './components/DashboardPanel.jsx';
+import Swal from 'sweetalert2';
+
+// إعدادات افتراضية للعربية و RTL
+const Toast = Swal.mixin({
+  customClass: { popup: 'swal2-rtl', title: 'text-right', htmlContainer: 'text-right' },
+  confirmButtonText: 'حسناً'
+});
 
 // مكون منفصل ومخزن - لا يعاد عرضه عند تغيير lightIndex أو rotation
 const SocialLinksBar = React.memo(({ socialLinks }) => {
@@ -1157,7 +1164,7 @@ const LuckyWheel = () => {
             setTimeout(() => { spinWheel(true); }, 500);
         } catch (error) {
             console.error("Error sending data:", error);
-            alert("حدث خطأ في الاتصال، يرجى التأكد من الإعدادات والمحاولة مرة أخرى.");
+            Toast.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ في الاتصال، يرجى التأكد من الإعدادات والمحاولة مرة أخرى.', confirmButtonText: 'حسناً' });
         } finally {
             setIsSubmitting(false);
         }
@@ -1187,7 +1194,7 @@ const LuckyWheel = () => {
       if (dashboardPassword === 'admin') {
           setIsDashboardUnlocked(true);
       } else {
-          alert('كلمة المرور غير صحيحة');
+          Toast.fire({ icon: 'error', title: 'خطأ', text: 'كلمة المرور غير صحيحة', confirmButtonText: 'حسناً' });
       }
   };
 
@@ -1204,7 +1211,7 @@ const LuckyWheel = () => {
 
   const handleDeleteSegment = (id) => {
       if (tempSegments.length <= 2) {
-          alert("يجب أن تحتوي العجلة على قطاعين على الأقل!");
+          Toast.fire({ icon: 'warning', title: 'تنبيه', text: 'يجب أن تحتوي العجلة على قطاعين على الأقل!', confirmButtonText: 'حسناً' });
           return;
       }
       setTempSegments(tempSegments.filter(s => s.id !== id));
@@ -1234,7 +1241,7 @@ const LuckyWheel = () => {
       const file = e.target.files[0];
       if (file) {
           if (file.size > 2000000) { 
-             alert("حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 2 ميجابايت");
+             Toast.fire({ icon: 'warning', title: 'تنبيه', text: 'حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 2 ميجابايت', confirmButtonText: 'حسناً' });
              return;
           }
           const reader = new FileReader();
@@ -1250,7 +1257,7 @@ const LuckyWheel = () => {
       const file = e.target.files[0];
       if (file) {
           if (file.size > 3000000) { 
-             alert("حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 3 ميجابايت");
+             Toast.fire({ icon: 'warning', title: 'تنبيه', text: 'حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 3 ميجابايت', confirmButtonText: 'حسناً' });
              return;
           }
           const reader = new FileReader();
@@ -1269,7 +1276,7 @@ const LuckyWheel = () => {
       const file = e.target.files[0];
       if (file) {
           if (file.size > 3000000) { 
-             alert("حجم الملف الصوتي كبير جداً (الحد الأقصى 3 ميجابايت)");
+             Toast.fire({ icon: 'warning', title: 'تنبيه', text: 'حجم الملف الصوتي كبير جداً (الحد الأقصى 3 ميجابايت)', confirmButtonText: 'حسناً' });
              return;
           }
           const reader = new FileReader();
@@ -1284,7 +1291,7 @@ const LuckyWheel = () => {
   // --- دالة معاينة الصوت ---
   const playPreview = (url) => {
       if (!url) {
-        alert("لا يوجد ملف صوتي للمعاينة.");
+        Toast.fire({ icon: 'info', title: 'تنبيه', text: 'لا يوجد ملف صوتي للمعاينة.', confirmButtonText: 'حسناً' });
         return;
       }
 
@@ -1298,7 +1305,7 @@ const LuckyWheel = () => {
       
       audio.onerror = (e) => {
         console.error("Audio error:", e);
-        alert("تعذر تشغيل الملف الصوتي. يرجى التأكد من الصيغة.");
+        Toast.fire({ icon: 'error', title: 'خطأ', text: 'تعذر تشغيل الملف الصوتي. يرجى التأكد من الصيغة.', confirmButtonText: 'حسناً' });
       };
 
       const playPromise = audio.play();
@@ -1307,7 +1314,7 @@ const LuckyWheel = () => {
               if (error.name !== 'AbortError' && error.name !== 'NotSupportedError') {
                   console.error("Preview play failed", error);
               } else if (error.name === 'NotSupportedError') {
-                  alert("صيغة الملف غير مدعومة في هذا المتصفح.");
+                  Toast.fire({ icon: 'error', title: 'خطأ', text: 'صيغة الملف غير مدعومة في هذا المتصفح.', confirmButtonText: 'حسناً' });
               }
           });
       }
@@ -1390,9 +1397,9 @@ const LuckyWheel = () => {
         const footerInfo = tempFooterSettings.links?.length > 0 
           ? `\n\n📌 تم حفظ ${tempFooterSettings.links.length} رابط مهم في الفوتر` 
           : '';
-        alert(`✅ تم حفظ الإعدادات بنجاح في السحابة! جميع المستخدمين سيرون نفس البيانات.${footerInfo}`);
+        Toast.fire({ icon: 'success', title: 'تم الحفظ!', text: `تم حفظ الإعدادات بنجاح في السحابة! جميع المستخدمين سيرون نفس البيانات.${footerInfo}`, confirmButtonText: 'حسناً' });
       } else {
-        alert('⚠️ تم حفظ الإعدادات محلياً، لكن حدث خطأ في الحفظ السحابي. يرجى المحاولة مرة أخرى.');
+        Toast.fire({ icon: 'warning', title: 'تنبيه', text: 'تم حفظ الإعدادات محلياً، لكن حدث خطأ في الحفظ السحابي. يرجى المحاولة مرة أخرى.', confirmButtonText: 'حسناً' });
       }
   };
 
@@ -1733,7 +1740,7 @@ const LuckyWheel = () => {
 
       <Footer logo={storeLogo} socialLinks={socialLinks} footerSettings={footerSettings} />
 
-      <style>{`.clip-path-pointer { clip-path: polygon(50% 100%, 0 0, 100% 0); } .perspective-1000 { perspective: 1000px; } .animate-spin-slow { animation: spin 3s linear infinite; } @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in-up { animation: fadeInUp 0.4s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } } .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; } @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 70% { transform: scale(0.9); } 100% { transform: scale(1); } } .animate-bounce-in { animation: bounceIn 0.5s cubic-bezier(0.215, 0.610, 0.355, 1.000); }`}</style>
+      <style>{`.swal2-rtl { direction: rtl; text-align: right; } .swal2-rtl .swal2-title { text-align: right; } .swal2-rtl .swal2-html-container { text-align: right; } .clip-path-pointer { clip-path: polygon(50% 100%, 0 0, 100% 0); } .perspective-1000 { perspective: 1000px; } .animate-spin-slow { animation: spin 3s linear infinite; } @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in-up { animation: fadeInUp 0.4s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } } .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; } @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 70% { transform: scale(0.9); } 100% { transform: scale(1); } } .animate-bounce-in { animation: bounceIn 0.5s cubic-bezier(0.215, 0.610, 0.355, 1.000); }`}</style>
     </div>
   );
 };
