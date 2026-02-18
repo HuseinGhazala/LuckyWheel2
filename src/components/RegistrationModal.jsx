@@ -16,11 +16,13 @@ export default function RegistrationModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white text-slate-900 rounded-3xl p-8 max-w-md w-full shadow-2xl border-4 border-yellow-400 relative overflow-hidden transform animate-bounce-in">
+      <div className="bg-white text-slate-900 rounded-3xl p-8 max-w-md w-full shadow-2xl  relative overflow-hidden transform animate-bounce-in">
         <button onClick={onClose} className="absolute top-2 left-2 text-slate-400 hover:text-red-500 transition-colors p-2">
-          <XCircle size={24} />
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M13 1L1 13M1 1L13 13" stroke="#333333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </button>
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 via-yellow-400 to-blue-500"></div>
+        {/* <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 via-yellow-400 to-blue-500"></div> */}
         <div className="text-center mb-8">
           {storeLogo ? (
             <img src={storeLogo} alt="Logo" className="w-24 h-24 mx-auto mb-4 object-contain animate-pulse drop-shadow-lg" />
@@ -29,7 +31,7 @@ export default function RegistrationModal({
               <Gift size={40} className="text-yellow-600" />
             </div>
           )}
-          <h2 className="text-3xl font-black text-slate-800 mb-2">خطوة واحدة للربح! 🎁</h2>
+          <h2 className="text-3xl font-black text-slate-800 mb-2">خطوة واحدة للربح! <span>🎁</span></h2>
           <p className="text-slate-500">سجل بياناتك لتدور العجلة فوراً</p>
         </div>
         <form onSubmit={onSubmit} className="space-y-4">
@@ -59,7 +61,7 @@ export default function RegistrationModal({
           </div>
           <div className="relative">
             <Phone className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400" size={20} />
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-medium z-10">🇸🇦 +966</div>
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-medium z-10">+966</div>
             <input
               type="tel"
               placeholder="5xxxxxxxx"

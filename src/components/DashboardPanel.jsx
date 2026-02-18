@@ -1,5 +1,5 @@
 import React from 'react';
-import { XCircle, Lock, Edit3, Save, Plus, Trash2, Upload, Hash, RotateCw, Palette, Monitor, Smartphone, Music, Play, Database, Link as LinkIcon, CheckCircle, AlertCircle, Share2, Facebook, Instagram, Twitter, Ghost, MessageCircle, Globe, Mail, Phone, List, Ticket, Scale, Image as ImageIcon } from 'lucide-react';
+import { XCircle, Lock, Edit3, Save, Plus, Trash2, Upload, Hash, RotateCw, Palette, Monitor, Smartphone, Music, Play, Database, Link as LinkIcon, CheckCircle, AlertCircle, Share2, Facebook, Instagram, Twitter, Ghost, MessageCircle, Globe, Mail, Phone, List, Ticket, Scale, Image as ImageIcon, Sparkles } from 'lucide-react';
 
 export default function DashboardPanel(props) {
   const {
@@ -8,6 +8,7 @@ export default function DashboardPanel(props) {
     tempBackgroundSettings, setTempBackgroundSettings, onBackgroundUpload, tempWinSound, tempLoseSound, onAudioUpload, onPlayPreview,
     tempGoogleScriptUrl, setTempGoogleScriptUrl, tempEnableDevToolsProtection, setTempEnableDevToolsProtection,
     tempSocialLinks, setTempSocialLinks, tempFooterSettings, setTempFooterSettings,
+    tempHeaderBadgeText, setTempHeaderBadgeText,
     editingCouponsId, setEditingCouponsId, couponInput, setCouponInput, onSaveCoupons,
     tempSegments, handleSegmentChange, handleAddSegment, handleDeleteSegment, openCouponManager
   } = props;
@@ -61,6 +62,20 @@ export default function DashboardPanel(props) {
                                               <p className="text-xs text-slate-500">ينصح باستخدام صورة بخلفية شفافة (PNG) حجم أقل من 2MB.</p>
                                           </div>
                                       </div>
+                                  </div>
+
+                                  {/* --- نص الشارة فوق العجلة --- */}
+                                  <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                                      <h3 className="font-bold text-slate-800 flex items-center gap-2 mb-4"><Sparkles className="text-amber-500" /> نص الشارة فوق العجلة</h3>
+                                      <input 
+                                          type="text" 
+                                          value={tempHeaderBadgeText || ''}
+                                          onChange={(e) => setTempHeaderBadgeText(e.target.value)}
+                                          placeholder="جوائز حقيقية ومضمونة"
+                                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-sm focus:border-amber-500 outline-none"
+                                          dir="rtl"
+                                      />
+                                      <p className="text-xs text-slate-500 mt-1">النص الذي يظهر بجانب أيقونة المكافأة فوق العجلة</p>
                                   </div>
 
                                   {/* --- إعدادات المحاولات --- */}

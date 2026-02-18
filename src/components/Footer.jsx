@@ -96,8 +96,8 @@ const Footer = ({ logo, socialLinks, footerSettings }) => {
                     <div className="w-full text-right lg:text-right mt-2">
                         <h3 className="text-black text-right text-[18px] font-medium leading-normal mb-1">الرقم الضريبي</h3>
                         <p className="text-black text-right text-[18px] font-medium leading-normal mb-2">{taxId}</p>
-                        <div className="w-10 h-10 opacity-80">
-                           {/* Placeholder for the small logo under tax ID */}
+                        <div className="w-10 h-10 opacity-80 hidden">
+                           {/* Placeholder for the small logo under tax ID - مخفي حالياً */}
                            {logo ? <img src={logo} className="w-full h-full object-contain grayscale" alt="Tax Logo" /> : <Gift size={24} className="text-slate-400"/>}
                         </div>
                     </div>
