@@ -1558,7 +1558,7 @@ const LuckyWheel = () => {
         {storeLogo ? (
             <div className="mb-6 relative inline-block animate-fade-in">
                 <div className="absolute inset-0  blur-2xl opacity-20 rounded-full"></div>
-                <img src={storeLogo} alt="Store Logo" className="h-24 md:h-32 object-contain relative z-10 drop-shadow-xl" />
+                <img src={storeLogo} alt="Store Logo" className="h-32 md:h-40 object-contain relative z-10 drop-shadow-xl" />
             </div>
         ) : (
              <h1 className="text-4xl md:text-6xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,0.5)] mb-2 tracking-wider uppercase" style={{ textShadow: '4px 4px 0px #F59E0B' }}>عجلة الحظ</h1>
@@ -1681,7 +1681,7 @@ const LuckyWheel = () => {
         )}
 
         {/* === Dashboard === */}
-        <div className="flex-1 w-full max-w-md bg-white text-slate-800 p-6 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] border-4 border-slate-200">
+        <div className="flex-1 w-full max-w-md bg-white text-slate-800 p-6 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-[rgba(24, 156, 215, 1)]">
           <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
             <h2 className="text-xl font-black flex items-center gap-2 text-slate-800"><ShoppingBag className="text-red-500" /> الجوائز المكتسبة</h2>
             {/* <button onClick={resetGame} className={`text-xs flex items-center gap-1 transition-all px-3 py-1.5 rounded-full font-bold uppercase ${remainingSpins <= 0 || availableIds.length === 0 ? 'bg-red-600 text-white animate-pulse' : 'bg-slate-100 text-slate-500 hover:text-white hover:bg-red-500'}`}><RefreshCw size={14} /> إعادة اللعبة</button> */}
