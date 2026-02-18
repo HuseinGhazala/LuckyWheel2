@@ -22,6 +22,37 @@ import Footer from './components/Footer.jsx';
 import RegistrationModal from './components/RegistrationModal.jsx';
 import WinnerModal from './components/WinnerModal.jsx';
 import DashboardPanel from './components/DashboardPanel.jsx';
+
+// مكون منفصل ومخزن - لا يعاد عرضه عند تغيير lightIndex أو rotation
+const SocialLinksBar = React.memo(({ socialLinks }) => {
+  const has = socialLinks?.facebook || socialLinks?.instagram || socialLinks?.twitter || socialLinks?.whatsapp || socialLinks?.snapchat || socialLinks?.website || socialLinks?.tiktok;
+  if (!has) return null;
+  const SocialIcon = ({ href, icon: Icon, color, label }) => {
+    if (!href) return null;
+    const link = label === 'WhatsApp' ? `https://wa.me/${href.replace(/\D/g,'')}` : href;
+    return (
+      <a href={link} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center  text-white hover:text-slate-900 hover:-translate-y-1 transition-all" aria-label={label} title={label}>
+        <Icon size={25} color={color} />
+      </a>
+    );
+  };
+  return (
+    <div className="mb-8 relative z-30 w-full flex justify-center animate-fade-in-up">
+      <div className="backdrop-blur-md px-3 py-3 rounded-[16PX] border shadow-xl" style={{ backgroundColor: 'rgba(24, 156, 215, 1)', borderColor: 'rgba(24, 156, 215, 1)' }}>
+        <div className="flex items-center gap-[0.4rem] flex-wrap justify-center">
+          <SocialIcon href={socialLinks.facebook} icon={FaFacebookF} color="#ffffff" label="Facebook" />
+          <SocialIcon href={socialLinks.instagram} icon={FaInstagram} color="#ffffff" label="Instagram" />
+          <SocialIcon href={socialLinks.twitter} icon={FaXTwitter} color="#ffffff" label="Twitter / X" />
+          <SocialIcon href={socialLinks.snapchat} icon={FaSnapchatGhost} color="#ffffff" label="Snapchat" />
+          <SocialIcon href={socialLinks.whatsapp} icon={FaWhatsapp} color="#ffffff" label="WhatsApp" />
+          <SocialIcon href={socialLinks.website} icon={FaGlobe} color="#ffffff" label="Website" />
+          <SocialIcon href={socialLinks.tiktok} icon={FaTiktok} color="#ffffff" label="TikTok" />
+        </div>
+      </div>
+    </div>
+  );
+});
+
 const LuckyWheel = () => {
   const apiKey = ""; 
 
@@ -50,6 +81,7 @@ const LuckyWheel = () => {
       const savedFooterSettings = localStorage.getItem('footerSettings');
       const savedEnableDevToolsProtection = localStorage.getItem('enableDevToolsProtection');
       const savedWheelStyle = localStorage.getItem('wheelStyle');
+      const savedHeaderBadgeText = localStorage.getItem('headerBadgeText');
       
       return {
         segments: savedSegments ? JSON.parse(savedSegments) : initialSegments,
@@ -80,7 +112,8 @@ const LuckyWheel = () => {
           businessPlatformId: ''
         },
         enableDevToolsProtection: savedEnableDevToolsProtection !== null ? savedEnableDevToolsProtection === 'true' : true,
-        wheelStyle: savedWheelStyle || 'classic'
+        wheelStyle: savedWheelStyle || 'classic',
+        headerBadgeText: savedHeaderBadgeText || ''
       };
     } catch (error) {
       console.error('Error loading settings from storage:', error);
@@ -282,6 +315,9 @@ const LuckyWheel = () => {
     businessPlatformId: ''
   });
 
+  // نص الشارة فوق العجلة
+  const [headerBadgeText, setHeaderBadgeText] = useState(loadedSettings?.headerBadgeText || '');
+
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [winner, setWinner] = useState(null);
@@ -314,6 +350,7 @@ const LuckyWheel = () => {
   const [tempLogo, setTempLogo] = useState(null);
   const [tempSocialLinks, setTempSocialLinks] = useState({ ...socialLinks });
   const [tempFooterSettings, setTempFooterSettings] = useState({ ...footerSettings });
+  const [tempHeaderBadgeText, setTempHeaderBadgeText] = useState(headerBadgeText);
   const [tempGoogleScriptUrl, setTempGoogleScriptUrl] = useState(googleScriptUrl);
   const [tempWinSound, setTempWinSound] = useState(winSound);
   const [tempLoseSound, setTempLoseSound] = useState(loseSound);
@@ -520,6 +557,7 @@ const LuckyWheel = () => {
             businessPlatformId: ''
           };
           setFooterSettings(loadedFooterSettings);
+          setHeaderBadgeText(cloudSettings.headerBadgeText || '');
           console.log('✅ تم تحميل إعدادات الفوتر من السحابة:', {
             description: loadedFooterSettings.description?.substring(0, 50) + '...',
             linksCount: loadedFooterSettings.links?.length || 0,
@@ -572,6 +610,7 @@ const LuckyWheel = () => {
             taxId: '',
             businessPlatformId: ''
           }));
+          localStorage.setItem('headerBadgeText', cloudSettings.headerBadgeText || '');
           localStorage.setItem('backgroundSettings', JSON.stringify(cloudSettings.backgroundSettings || {}));
           localStorage.setItem('winSound', cloudSettings.winSound || "");
           localStorage.setItem('loseSound', cloudSettings.loseSound || "");
@@ -604,6 +643,7 @@ const LuckyWheel = () => {
               taxId: '',
               businessPlatformId: ''
             });
+            setHeaderBadgeText(localData.headerBadgeText || '');
             setBackgroundSettings(localData.backgroundSettings || {
               type: 'color',
               color: '#0f172a',
@@ -638,6 +678,7 @@ const LuckyWheel = () => {
             taxId: '',
             businessPlatformId: ''
           });
+          setHeaderBadgeText(localData.headerBadgeText || '');
           setBackgroundSettings(localData.backgroundSettings || {});
           setWinSound(localData.winSound || "");
           setLoseSound(localData.loseSound || "");
@@ -1130,6 +1171,7 @@ const LuckyWheel = () => {
       setTempLogo(storeLogo);
       setTempSocialLinks({ ...socialLinks });
       setTempFooterSettings({ ...footerSettings });
+      setTempHeaderBadgeText(headerBadgeText);
       // تحميل رابط Google Script من السحابة أولاً
       setTempGoogleScriptUrl(googleScriptUrl);
       setTempWinSound(winSound);
@@ -1279,6 +1321,7 @@ const LuckyWheel = () => {
       setStoreLogo(tempLogo);
       setSocialLinks(tempSocialLinks);
       setFooterSettings(tempFooterSettings);
+      setHeaderBadgeText(tempHeaderBadgeText);
       
       setGoogleScriptUrl(tempGoogleScriptUrl);
       // لا نحفظ في localStorage - فقط في Supabase
@@ -1306,6 +1349,7 @@ const LuckyWheel = () => {
       }
       localStorage.setItem('socialLinks', JSON.stringify(tempSocialLinks));
       localStorage.setItem('footerSettings', JSON.stringify(tempFooterSettings));
+      localStorage.setItem('headerBadgeText', tempHeaderBadgeText);
       localStorage.setItem('backgroundSettings', JSON.stringify(tempBackgroundSettings));
       localStorage.setItem('winSound', tempWinSound);
       localStorage.setItem('loseSound', tempLoseSound);
@@ -1319,6 +1363,7 @@ const LuckyWheel = () => {
         logo: tempLogo,
         socialLinks: tempSocialLinks,
         footerSettings: tempFooterSettings,
+        headerBadgeText: tempHeaderBadgeText,
         backgroundSettings: tempBackgroundSettings,
         winSound: tempWinSound,
         loseSound: tempLoseSound,
@@ -1351,25 +1396,6 @@ const LuckyWheel = () => {
       }
   };
 
-  const hasSocialLinks = socialLinks.facebook || socialLinks.instagram || socialLinks.twitter || socialLinks.whatsapp || socialLinks.snapchat || socialLinks.website || socialLinks.tiktok;
-
-  const SocialIcon = ({ href, icon: Icon, color, label }) => {
-    if (!href) return null;
-    const link = label === 'WhatsApp' ? `https://wa.me/${href.replace(/\D/g,'')}` : href;
-    return (
-      <a 
-        href={link} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white text-white hover:text-slate-900 hover:-translate-y-1 transition-all shadow-lg border border-white/40"
-        aria-label={label}
-        title={label}
-      >
-        <Icon size={18} color={color} />
-      </a>
-    );
-  };
-
   // مؤشر التحميل أثناء جلب البيانات من السحابة
   if (isLoadingSettings) {
     // محاولة جلب اللوجو من localStorage أو من البيانات المحملة
@@ -1381,7 +1407,7 @@ const LuckyWheel = () => {
           {loadingLogo ? (
             <div className="relative inline-block">
               {/* تأثير التوهج */}
-              <div className="absolute inset-0 bg-yellow-400 blur-3xl opacity-30 rounded-full animate-pulse"></div>
+              <div className="absolute inset-0  blur-3xl opacity-30 rounded-full animate-pulse"></div>
               {/* اللوجو */}
               <div className="relative z-10 animate-bounce">
                 <img 
@@ -1499,6 +1525,8 @@ const LuckyWheel = () => {
         setTempSocialLinks={setTempSocialLinks}
         tempFooterSettings={tempFooterSettings}
         setTempFooterSettings={setTempFooterSettings}
+        tempHeaderBadgeText={tempHeaderBadgeText}
+        setTempHeaderBadgeText={setTempHeaderBadgeText}
         editingCouponsId={editingCouponsId}
         setEditingCouponsId={setEditingCouponsId}
         couponInput={couponInput}
@@ -1529,38 +1557,23 @@ const LuckyWheel = () => {
           <header className="mb-8 text-center relative z-10">
         {storeLogo ? (
             <div className="mb-6 relative inline-block animate-fade-in">
-                <div className="absolute inset-0 bg-yellow-400 blur-2xl opacity-20 rounded-full"></div>
+                <div className="absolute inset-0  blur-2xl opacity-20 rounded-full"></div>
                 <img src={storeLogo} alt="Store Logo" className="h-24 md:h-32 object-contain relative z-10 drop-shadow-xl" />
             </div>
         ) : (
              <h1 className="text-4xl md:text-6xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,0.5)] mb-2 tracking-wider uppercase" style={{ textShadow: '4px 4px 0px #F59E0B' }}>عجلة الحظ</h1>
         )}
         
+        {(headerBadgeText || '').trim() && (
         <div className="flex items-center justify-center gap-4 mt-2">
-             <p className="text-yellow-400 font-bold bg-black/30 px-4 py-1 rounded-full border border-yellow-500/50 inline-flex items-center gap-2"><Sparkles size={16} /> جوائز حقيقية ومضمونة</p>
+             <p className="text-yellow-400 font-bold bg-black/30 px-4 py-1 rounded-full border border-yellow-500/50 inline-flex items-center gap-2"><Sparkles size={16} /> {headerBadgeText}</p>
             <button onClick={toggleMute} className="bg-black/30 p-2 rounded-full border border-slate-600 hover:bg-black/50 transition-colors text-slate-300" title={isMuted ? "تشغيل الصوت" : "كتم الصوت"}>{isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}</button>
         </div>
+        )}
       </header>
 
-      {/* --- أيقونات التواصل الاجتماعي (موبايل وديسكتوب - فوق العجلة) --- */}
-      {hasSocialLinks && (
-          <div className="mb-8 relative z-30 w-full flex justify-center animate-fade-in-up">
-              <div
-                className="backdrop-blur-md px-3 py-3 rounded-[16PX] border shadow-xl"
-                style={{ backgroundColor: 'rgba(24, 156, 215, 1)', borderColor: 'rgba(24, 156, 215, 1)' }}
-              >
-                  <div className="flex items-center gap-[0.4rem] flex-wrap justify-center">
-                      <SocialIcon href={socialLinks.facebook} icon={FaFacebookF} color="#1877F2" label="Facebook" />
-                      <SocialIcon href={socialLinks.instagram} icon={FaInstagram} color="#E4405F" label="Instagram" />
-                      <SocialIcon href={socialLinks.twitter} icon={FaXTwitter} color="#000000" label="Twitter / X" />
-                      <SocialIcon href={socialLinks.snapchat} icon={FaSnapchatGhost} color="#FFFC00" label="Snapchat" />
-                      <SocialIcon href={socialLinks.whatsapp} icon={FaWhatsapp} color="#25D366" label="WhatsApp" />
-                      <SocialIcon href={socialLinks.website} icon={FaGlobe} color="#64748b" label="Website" />
-                      <SocialIcon href={socialLinks.tiktok} icon={FaTiktok} color="#000000" label="TikTok" />
-                  </div>
-              </div>
-          </div>
-      )}
+      {/* --- أيقونات التواصل الاجتماعي (مُخزّن - لا يتأثر بتحديث lightIndex) --- */}
+      <SocialLinksBar socialLinks={socialLinks} />
 
       <div className={`flex flex-col justify-center lg:flex-row items-center gap-12 w-full max-w-6xl relative z-10 transition-all duration-500 ${showRegistrationModal || showDashboard ? 'opacity-40 blur-sm pointer-events-none' : 'opacity-100'}`}>
         
@@ -1575,7 +1588,7 @@ const LuckyWheel = () => {
                       const isUsed = !availableIds.includes(segment.id);
                       const startAngle = index * segmentSize;
                       const endAngle = (index + 1) * segmentSize;
-                      return (<g key={segment.id}><path d={describeArc(startAngle, endAngle)} fill={isUsed ? '#cbd5e1' : segment.color} stroke="white" strokeWidth="0.5" style={{ filter: isUsed ? 'grayscale(100%)' : 'none', opacity: isUsed ? 0.8 : 1, transition: 'fill 0.3s' }} /></g>);
+                      return (<g key={segment.id}><path d={describeArc(startAngle, endAngle)} fill={isUsed ? '#cbd5e1' : segment.color} style={{ filter: isUsed ? 'grayscale(100%)' : 'none', opacity: isUsed ? 0.8 : 1, transition: 'fill 0.3s' }} /></g>);
                     })}
                     {segments.map((segment, index) => {
                        const isUsed = !availableIds.includes(segment.id);
@@ -1614,7 +1627,7 @@ const LuckyWheel = () => {
                    const isUsed = !availableIds.includes(segment.id);
                    const startAngle = index * segmentSize;
                    const endAngle = (index + 1) * segmentSize;
-                   return (<g key={segment.id}><path d={describeArc(startAngle, endAngle)} fill={isUsed ? '#cbd5e1' : segment.color} stroke="white" strokeWidth="0.5" style={{ filter: isUsed ? 'grayscale(100%)' : 'none', opacity: isUsed ? 0.8 : 1, transition: 'fill 0.3s' }} /></g>);
+                   return (<g key={segment.id}><path d={describeArc(startAngle, endAngle)} fill={isUsed ? '#cbd5e1' : segment.color} style={{ filter: isUsed ? 'grayscale(100%)' : 'none', opacity: isUsed ? 0.8 : 1, transition: 'fill 0.3s' }} /></g>);
                  })}
                  {segments.map((segment, index) => {
                     const isUsed = !availableIds.includes(segment.id);
