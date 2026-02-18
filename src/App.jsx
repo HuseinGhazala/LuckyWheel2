@@ -1184,7 +1184,7 @@ const LuckyWheel = () => {
 
   const handleUnlockDashboard = (e) => {
       e.preventDefault();
-      if (dashboardPassword === 'adminnn') {
+      if (dashboardPassword === 'admin') {
           setIsDashboardUnlocked(true);
       } else {
           alert('كلمة المرور غير صحيحة');
