@@ -21,7 +21,7 @@ export default function DashboardPanel(props) {
                       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
                           <div className="bg-slate-100 p-4 rounded-full mb-4"><Lock size={48} className="text-slate-400" /></div>
                           <h2 className="text-2xl font-bold mb-2">لوحة التحكم محمية</h2>
-                          <p className="text-slate-500 mb-6">أدخل كلمة المرور للمتابعة (الافتراضية: admin)</p>
+                          <p className="text-slate-500 mb-6">أدخل كلمة المرور للمتابعة </p>
                           <form onSubmit={onUnlockDashboard} className="flex gap-2 w-full max-w-xs">
                               <input type="password" placeholder="كلمة المرور" className="flex-1 px-4 py-2 border-2 border-slate-300 rounded-lg focus:border-blue-500 outline-none text-center" value={dashboardPassword} onChange={(e) => setDashboardPassword(e.target.value)} autoFocus />
                               <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700">دخول</button>
