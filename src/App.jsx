@@ -106,7 +106,7 @@ const LuckyWheel = () => {
         },
         backgroundSettings: savedBackgroundSettings ? JSON.parse(savedBackgroundSettings) : {
           type: 'color',
-          color: '#0f172a',
+          color: '#ffffff',
           desktopImage: null,
           mobileImage: null
         },
@@ -269,7 +269,7 @@ const LuckyWheel = () => {
   // إعدادات الخلفية (محدثة لدعم صورتين)
   const [backgroundSettings, setBackgroundSettings] = useState(loadedSettings?.backgroundSettings || {
     type: 'color', // 'color' or 'image'
-    color: '#0f172a',
+    color: '#ffffff',
     desktopImage: null,
     mobileImage: null
   });
@@ -572,7 +572,7 @@ const LuckyWheel = () => {
           });
           setBackgroundSettings(cloudSettings.backgroundSettings || {
             type: 'color',
-            color: '#0f172a',
+            color: '#ffffff',
             desktopImage: null,
             mobileImage: null
           });
@@ -653,7 +653,7 @@ const LuckyWheel = () => {
             setHeaderBadgeText(localData.headerBadgeText || '');
             setBackgroundSettings(localData.backgroundSettings || {
               type: 'color',
-              color: '#0f172a',
+              color: '#ffffff',
               desktopImage: null,
               mobileImage: null
             });
@@ -1403,43 +1403,31 @@ const LuckyWheel = () => {
       }
   };
 
-  // مؤشر التحميل أثناء جلب البيانات من السحابة
+  // مؤشر التحميل أثناء جلب البيانات من السحابة — صورة اللودر ثابتة من public
+  const loaderImageUrl = '/image%202.png';
   if (isLoadingSettings) {
-    // محاولة جلب اللوجو من localStorage أو من البيانات المحملة
-    const loadingLogo = storeLogo || loadedSettings?.logo || localStorage.getItem('storeLogo');
-    
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 font-sans text-slate-100 bg-slate-900" dir="rtl" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 font-sans text-slate-100 bg-[#ffffff]" dir="rtl" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>
         <div className="text-center animate-fade-in">
-          {loadingLogo ? (
-            <div className="relative inline-block">
-              {/* تأثير التوهج */}
-              <div className="absolute inset-0  blur-3xl opacity-30 rounded-full animate-pulse"></div>
-              {/* اللوجو */}
-              <div className="relative z-10 animate-bounce">
-                <img 
-                  src={loadingLogo} 
-                  alt="Logo" 
-                  className="h-32 md:h-40 w-auto mx-auto object-contain drop-shadow-2xl"
-                  style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}
-                />
-              </div>
-              {/* مؤشر التحميل تحت اللوجو */}
-              <div className="mt-8 flex justify-center">
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s', animationDuration: '1s' }}></div>
-                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s', animationDuration: '1s' }}></div>
-                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s', animationDuration: '1s' }}></div>
-                </div>
+          <div className="relative inline-block">
+            {/* صورة اللودر — خيمة الألعاب */}
+            <div className="relative z-10">
+              <img 
+                src={loaderImageUrl} 
+                alt="خيمة الألعاب" 
+                className="h-48 md:h-56 w-auto mx-auto object-contain drop-shadow-2xl"
+                style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}
+              />
+            </div>
+            {/* مؤشر التحميل تحت الصورة */}
+            <div className="mt-8 flex justify-center">
+              <div className="flex gap-2">
+                <div className="w-3 h-3 bg-[#189CD7] rounded-full animate-bounce" style={{ animationDelay: '0s', animationDuration: '1s' }}></div>
+                <div className="w-3 h-3 bg-[#189CD7] rounded-full animate-bounce" style={{ animationDelay: '0.2s', animationDuration: '1s' }}></div>
+                <div className="w-3 h-3 bg-[#189CD7] rounded-full animate-bounce" style={{ animationDelay: '0.4s', animationDuration: '1s' }}></div>
               </div>
             </div>
-          ) : (
-            <div className="text-center">
-              <Loader2 className="animate-spin mx-auto mb-4 text-blue-500" size={48} />
-              <p className="text-xl font-bold text-white">جاري تحميل الإعدادات من السحابة...</p>
-              <p className="text-sm text-slate-400 mt-2">يرجى الانتظار</p>
-            </div>
-          )}
+          </div>
         </div>
         <style>{`
           @keyframes pulse {
@@ -1480,7 +1468,7 @@ const LuckyWheel = () => {
           font-family: 'IBM Plex Sans Arabic', sans-serif !important;
         }
         .main-container {
-          background-color: ${backgroundSettings.type === 'color' ? backgroundSettings.color : '#0f172a'};
+          background-color: ${backgroundSettings.type === 'color' ? backgroundSettings.color : '#ffffff'};
           background-size: contain;
           background-position: center;
           background-repeat: repeat;

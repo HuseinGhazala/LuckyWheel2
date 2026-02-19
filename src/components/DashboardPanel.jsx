@@ -13,7 +13,7 @@ export default function DashboardPanel(props) {
     tempSegments, handleSegmentChange, handleAddSegment, handleDeleteSegment, openCouponManager
   } = props;
   if (!show) return null;
-  return (          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-md animate-fade-in">
+  return (          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#ffffff]/95 backdrop-blur-md animate-fade-in">
               <div className="bg-white text-slate-900 rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl relative overflow-hidden">
                   <button onClick={onClose} className="absolute top-4 left-4 p-2 bg-slate-100 rounded-full hover:bg-red-100 text-slate-500 hover:text-red-500 transition-colors z-10"><XCircle size={24} /></button>
 
@@ -487,7 +487,7 @@ export default function DashboardPanel(props) {
                               <hr className="border-slate-200 mb-8" />
 
                               {editingCouponsId && (
-                                  <div className="absolute inset-0 z-20 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+                                  <div className="absolute inset-0 z-20 bg-[#ffffff]/50 backdrop-blur-sm flex items-center justify-center p-4">
                                       <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl flex flex-col h-[80%] overflow-hidden animate-bounce-in">
                                           <div className="p-4 border-b flex justify-between items-center bg-blue-50">
                                               <h3 className="font-bold flex items-center gap-2"><Ticket className="text-blue-500" /> أدخل أكواد الكوبونات</h3>
