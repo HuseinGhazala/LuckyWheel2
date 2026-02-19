@@ -15,7 +15,7 @@ export default function RegistrationModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#ffffff]/90 backdrop-blur-sm animate-fade-in">
       <div className="bg-white text-slate-900 rounded-3xl p-8 max-w-md w-full shadow-2xl  relative overflow-hidden transform animate-bounce-in">
         <button onClick={onClose} className="absolute top-2 left-2 text-slate-400 hover:text-red-500 transition-colors p-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
