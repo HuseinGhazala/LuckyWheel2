@@ -116,11 +116,12 @@ export default function DashboardPanel(props) {
                                           </button>
                                           <button
                                               onClick={() => setTempWheelStyle('modern')}
-                                              className={`p-4 rounded-xl border-2 transition-all ${
+                                              className={`hidden p-4 rounded-xl border-2 transition-all ${
                                                   tempWheelStyle === 'modern'
                                                       ? 'border-purple-500 bg-purple-50'
                                                       : 'border-slate-200 hover:border-purple-300'
                                               }`}
+                                              aria-hidden
                                           >
                                               <div className="text-center">
                                                   <div className="w-24 h-24 mx-auto mb-2 relative">

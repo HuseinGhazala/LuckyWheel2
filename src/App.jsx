@@ -119,7 +119,7 @@ const LuckyWheel = () => {
           businessPlatformId: ''
         },
         enableDevToolsProtection: savedEnableDevToolsProtection !== null ? savedEnableDevToolsProtection === 'true' : true,
-        wheelStyle: savedWheelStyle || 'classic',
+        wheelStyle: 'classic',
         headerBadgeText: savedHeaderBadgeText || ''
       };
     } catch (error) {
@@ -595,12 +595,10 @@ const LuckyWheel = () => {
             console.log('✅ تم تحميل إعدادات الحماية من السحابة:', cloudSettings.enableDevToolsProtection ? 'مفعّل' : 'معطّل');
           }
           
-          // تحديث شكل العجلة
-          if (cloudSettings.wheelStyle) {
-            setWheelStyle(cloudSettings.wheelStyle);
-            localStorage.setItem('wheelStyle', cloudSettings.wheelStyle);
-            console.log('✅ تم تحميل شكل العجلة من السحابة:', cloudSettings.wheelStyle);
-          }
+          // تحديث شكل العجلة — الديفولت كلاسيكي (خيار الحديث مخفي حالياً)
+          setWheelStyle('classic');
+          localStorage.setItem('wheelStyle', 'classic');
+          console.log('✅ تم تحميل شكل العجلة من السحابة: classic');
           
           // حفظ في localStorage كنسخة احتياطية (باستخدام cleanedSegments)
           localStorage.setItem('wheelSegments', JSON.stringify(cleanedSegments));
@@ -662,9 +660,7 @@ const LuckyWheel = () => {
             if (localData.enableDevToolsProtection !== undefined) {
               setEnableDevToolsProtection(localData.enableDevToolsProtection);
             }
-            if (localData.wheelStyle) {
-              setWheelStyle(localData.wheelStyle);
-            }
+            setWheelStyle('classic');
             console.log('📦 تم استخدام البيانات المحلية');
           }
         }
@@ -692,9 +688,7 @@ const LuckyWheel = () => {
           if (localData.enableDevToolsProtection !== undefined) {
             setEnableDevToolsProtection(localData.enableDevToolsProtection);
           }
-          if (localData.wheelStyle) {
-            setWheelStyle(localData.wheelStyle);
-          }
+          setWheelStyle('classic');
         }
       } finally {
         setIsLoadingSettings(false);
