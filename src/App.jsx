@@ -1481,9 +1481,9 @@ const LuckyWheel = () => {
         }
         .main-container {
           background-color: ${backgroundSettings.type === 'color' ? backgroundSettings.color : '#0f172a'};
-          background-size: cover;
+          background-size: contain;
           background-position: center;
-          background-repeat: no-repeat;
+          background-repeat: repeat;
           background-attachment: fixed;
           font-family: 'IBM Plex Sans Arabic', sans-serif !important;
           ${backgroundSettings.type === 'image' && backgroundSettings.desktopImage ? `background-image: url(${backgroundSettings.desktopImage});` : ''}
@@ -1563,7 +1563,7 @@ const LuckyWheel = () => {
           {/* Header */}
           <header className="mb-8 text-center relative z-10">
         {storeLogo ? (
-            <div className="mb-6 relative inline-block animate-fade-in">
+            <div className=" relative inline-block animate-fade-in">
                 <div className="absolute inset-0  blur-2xl opacity-20 rounded-full"></div>
                 <img src={storeLogo} alt="Store Logo" className="h-32 md:h-40 object-contain relative z-10 drop-shadow-xl" />
             </div>
@@ -1577,10 +1577,10 @@ const LuckyWheel = () => {
             <button onClick={toggleMute} className="bg-black/30 p-2 rounded-full border border-slate-600 hover:bg-black/50 transition-colors text-slate-300" title={isMuted ? "تشغيل الصوت" : "كتم الصوت"}>{isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}</button>
         </div>
         )}
+          <div className="mt-6">
+            <SocialLinksBar socialLinks={socialLinks} />
+          </div>
       </header>
-
-      {/* --- أيقونات التواصل الاجتماعي (مُخزّن - لا يتأثر بتحديث lightIndex) --- */}
-      <SocialLinksBar socialLinks={socialLinks} />
 
       <div className={`flex flex-col justify-center lg:flex-row items-center gap-12 w-full max-w-6xl relative z-10 transition-all duration-500 ${showRegistrationModal || showDashboard ? 'opacity-40 blur-sm pointer-events-none' : 'opacity-100'}`}>
         
