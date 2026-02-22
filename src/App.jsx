@@ -898,7 +898,6 @@ const LuckyWheel = () => {
       if (winningSegment.type === 'prize') {
         setHistory(prev => [...prev, { ...winningSegment, wonCode: assignedCode }]);
         
-        // حفظ بيانات الجائزة الفائزة في Supabase و Google Sheets معاً
         if (isRegistered && userData.name && userData.email && userData.phone) {
           const winData = {
             name: userData.name,
@@ -907,73 +906,43 @@ const LuckyWheel = () => {
             prize: winningSegment.text,
             couponCode: assignedCode || aiContent?.code || 'N/A'
           };
-          
-          // حفظ في Supabase
           const useSupabase = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_URL !== 'YOUR_SUPABASE_URL';
-          
           if (useSupabase) {
             console.log('💾 جاري حفظ بيانات الجائزة في Supabase...');
             saveSupabaseWinData(winData)
-              .then(saved => {
-                if (saved) console.log('✅ تم حفظ بيانات الجائزة في Supabase');
-              })
+              .then(saved => { if (saved) console.log('✅ تم حفظ بيانات الجائزة في Supabase'); })
               .catch(err => console.warn('⚠️ فشل حفظ في Supabase:', err));
           }
-          
-          // حفظ في Google Sheets أيضاً (فقط إذا كان الرابط موجود)
-          const scriptUrl = googleScriptUrl;
-          if (scriptUrl && scriptUrl.trim() !== '' && scriptUrl.includes('script.google.com')) {
-            console.log('💾 جاري حفظ بيانات الجائزة في Google Sheets...');
-            console.log('🔗 الرابط:', scriptUrl);
-            console.log('🎁 الجائزة:', winData.prize);
-            
-            // استخدام URLSearchParams وإرساله كـ string
-            const winParams = new URLSearchParams();
-            winParams.append('action', 'saveWin');
-            winParams.append('name', winData.name || '');
-            winParams.append('email', winData.email || '');
-            winParams.append('phone', winData.phone || '');
-            winParams.append('prize', winData.prize || '');
-            winParams.append('couponCode', winData.couponCode || '');
-            winParams.append('timestamp', new Date().toISOString());
-            
-            const winParamsString = winParams.toString();
-            console.log('📤 بيانات الجائزة المرسلة:', winParamsString);
-            
-            // إرسال البيانات مع retry mechanism
-            const sendWinToGoogleSheets = async (retries = 3) => {
-                for (let i = 0; i < retries; i++) {
-                    try {
-                        const response = await fetch(scriptUrl, { 
-                            method: 'POST', 
-                            body: winParamsString,
-                            mode: 'no-cors',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            redirect: 'follow'
-                        });
-                        console.log(`✅ محاولة ${i + 1}: تم إرسال بيانات الجائزة إلى Google Sheets`);
-                        console.log('💡 تحقق من Google Sheet → Wins');
-                        break; // نجحت، توقف عن المحاولات
-                    } catch (err) {
-                        console.error(`❌ محاولة ${i + 1} فشلت:`, err);
-                        if (i === retries - 1) {
-                            console.error('❌ فشل حفظ في Google Sheets بعد جميع المحاولات');
-                            console.error('تفاصيل:', err.message);
-                        } else {
-                            // انتظر قليلاً قبل المحاولة التالية
-                            await new Promise(resolve => setTimeout(resolve, 1000));
-                        }
-                    }
-                }
-            };
-            
-            sendWinToGoogleSheets();
-          } else {
-            console.warn('⚠️ رابط Google Script غير محدد أو غير صحيح');
-          }
         }
+      }
+
+      // إرسال نتيجة التدوير (كسب/خسر) + الكوبون عند الفوز إلى Google Sheets لكل تدويرة
+      if (isRegistered && userData.name && userData.phone && googleScriptUrl && googleScriptUrl.trim() !== '' && googleScriptUrl.includes('script.google.com')) {
+        const resultAr = winningSegment.type === 'prize' ? 'كسب' : 'خسر';
+        const couponCode = winningSegment.type === 'prize' ? (assignedCode || aiContent?.code || '') : '';
+        const winParams = new URLSearchParams();
+        winParams.append('action', 'saveWin');
+        winParams.append('name', userData.name || '');
+        winParams.append('email', userData.email || '');
+        winParams.append('phone', userData.phone || '');
+        winParams.append('result', resultAr);
+        winParams.append('prize', winningSegment.text || '');
+        winParams.append('couponCode', couponCode);
+        winParams.append('timestamp', new Date().toISOString());
+        const winParamsString = winParams.toString();
+        const sendWinToGoogleSheets = async (retries = 3) => {
+          for (let i = 0; i < retries; i++) {
+            try {
+              await fetch(googleScriptUrl, { method: 'POST', body: winParamsString, mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'follow' });
+              console.log(`✅ تم إرسال نتيجة التدوير (${resultAr}) إلى Google Sheets`);
+              break;
+            } catch (err) {
+              if (i === retries - 1) console.error('❌ فشل حفظ في Google Sheets:', err);
+              else await new Promise(r => setTimeout(r, 1000));
+            }
+          }
+        };
+        sendWinToGoogleSheets();
       }
       setAvailableIds(prev => prev.filter(id => id !== winningId));
     }, 4500);
