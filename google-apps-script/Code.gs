@@ -25,11 +25,11 @@ function setupSheets() {
   let winsSheet = ss.getSheetByName(SHEET_WINS);
   if (!winsSheet) {
     winsSheet = ss.insertSheet(SHEET_WINS);
-    winsSheet.appendRow(["Timestamp", "Name", "Email", "Phone", "Result", "Prize", "Coupon_Code"]);
+    winsSheet.appendRow(["Timestamp", "Name", "Email", "Phone", "Prize", "Coupon_Code"]);
   } else {
     const lastRow = winsSheet.getLastRow();
     if (lastRow === 0) {
-      winsSheet.appendRow(["Timestamp", "Name", "Email", "Phone", "Result", "Prize", "Coupon_Code"]);
+      winsSheet.appendRow(["Timestamp", "Name", "Email", "Phone", "Prize", "Coupon_Code"]);
     }
   }
   
@@ -63,9 +63,11 @@ function handleRequest(e) {
         } else {
            const parts = content.split('&');
            parts.forEach(part => {
-             const [key, value] = part.split('=');
-             if (key && value) {
-               params[decodeURIComponent(key)] = decodeURIComponent(value.replace(/\+/g, ' '));
+             const idx = part.indexOf('=');
+             if (idx > 0) {
+               const key = decodeURIComponent(part.substring(0, idx).trim());
+               const value = decodeURIComponent(part.substring(idx + 1).replace(/\+/g, ' '));
+               if (key) params[key] = value;
              }
            });
         }
@@ -141,32 +143,34 @@ function saveUserData(ss, params) {
 }
 
 /**
- * حفظ نتيجة التدوير: كسب أو خسر + الجائزة/النص + الكوبون (إن وُجد)
- * Result: "كسب" | "خسر"
- * Coupon_Code: يُملأ فقط عند الفوز
+ * حفظ الفائزين فقط في صفحة Wins: الاسم، الجائزة، الكوبون.
+ * لا يُسجّل الخاسرون (خسر) — الصفحة للفائزين فقط.
  */
 function saveWinData(ss, params) {
+  const result = (params.result === "خسر" || params.result === "lost") ? "خسر" : "كسب";
+  if (result === "خسر") {
+    return { success: true };
+  }
+
   let sheet = ss.getSheetByName(SHEET_WINS);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_WINS);
-    sheet.appendRow(["Timestamp", "Name", "Email", "Phone", "Result", "Prize", "Coupon_Code"]);
+    sheet.appendRow(["Timestamp", "Name", "Email", "Phone", "Prize", "Coupon_Code"]);
   }
   
   const lastRow = sheet.getLastRow();
   if (lastRow === 0) {
-    sheet.appendRow(["Timestamp", "Name", "Email", "Phone", "Result", "Prize", "Coupon_Code"]);
+    sheet.appendRow(["Timestamp", "Name", "Email", "Phone", "Prize", "Coupon_Code"]);
   }
   
   const timestamp = params.timestamp ? new Date(params.timestamp) : new Date();
-  const result = (params.result === "خسر" || params.result === "lost") ? "خسر" : "كسب";
-  const couponCode = result === "كسب" ? (params.couponCode || params.coupon_code || "") : "";
+  const couponCode = params.couponCode || params.coupon_code || "";
   
   sheet.appendRow([
     timestamp,
     params.name || "",
     params.email || "",
     params.phone || "",
-    result,
     params.prize || "",
     couponCode
   ]);
