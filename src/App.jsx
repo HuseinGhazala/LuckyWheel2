@@ -704,7 +704,20 @@ const LuckyWheel = () => {
     loadCloudSettings();
   }, []); // يتم التحميل مرة واحدة عند تحميل الصفحة
 
-  const segmentSize = 360 / segments.length;
+  // القطاعات اللي فيها كوبونات (اللي ممكن تظهر في العجلة)
+  const hasCoupons = (s) => s.couponCodes && Array.isArray(s.couponCodes) && s.couponCodes.length > 0;
+  const wheelSegments = segments.filter(hasCoupons);
+  // القطاعات المعروضة في العجلة — تتحدّث عند بداية كل لفة جديدة (مش فور خلاص الكوبونات)
+  const [displayWheelSegments, setDisplayWheelSegments] = useState([]);
+  const displayInitializedRef = useRef(false);
+  useEffect(() => {
+    if (segments.length > 0 && !displayInitializedRef.current) {
+      displayInitializedRef.current = true;
+      setDisplayWheelSegments(segments.filter(hasCoupons));
+    }
+  }, [segments]);
+  const segmentSize = displayWheelSegments.length > 0 ? 360 / displayWheelSegments.length : 360;
+  const playableInWheel = displayWheelSegments.filter(s => availableIds.includes(s.id)).length;
 
   useEffect(() => {
     let interval;
@@ -782,8 +795,12 @@ const LuckyWheel = () => {
         return;
     }
 
-    if (isSpinning || availableIds.length === 0 || remainingSpins <= 0) return;
+    const currentWheelSegments = segments.filter(hasCoupons);
+    const playableSegments = currentWheelSegments.filter(s => availableIds.includes(s.id));
+    if (isSpinning || currentWheelSegments.length === 0 || playableSegments.length === 0 || remainingSpins <= 0) return;
     
+    setDisplayWheelSegments(currentWheelSegments);
+
     if (!isMuted && spinAudioRef.current) {
         spinAudioRef.current.currentTime = 0;
         spinAudioRef.current.loop = true; 
@@ -797,14 +814,15 @@ const LuckyWheel = () => {
     setAiContent(null);
     setShowConfetti(false);
 
-    const availableSegments = segments.filter(s => availableIds.includes(s.id));
-    const totalWeight = availableSegments.reduce((sum, item) => sum + (parseInt(item.weight) || 0), 0);
+    setTimeout(() => {
+    const availableSegments = currentWheelSegments.filter(s => availableIds.includes(s.id));
+    const totalWeight = availableSegments.reduce((sum, item) => sum + (parseFloat(item.weight) || 0), 0);
     
     let randomNum = Math.random() * totalWeight;
     let winningSegment = availableSegments[0];
 
     for (const segment of availableSegments) {
-      const weight = parseInt(segment.weight) || 0;
+      const weight = parseFloat(segment.weight) || 0;
       if (randomNum < weight) {
         winningSegment = segment;
         break;
@@ -821,10 +839,8 @@ const LuckyWheel = () => {
             assignedCode = winningSegment.couponCodes[0];
             assignedMessage = "استخدم هذا الكوبون الآن! 🚀"; 
             
-            // حذف الكوبون المستخدم من المصفوفة
             const updatedSegments = segments.map(s => {
                 if (s.id === winningSegment.id) {
-                    // حذف الكوبون الأول فقط (الذي تم استخدامه)
                     const remainingCodes = s.couponCodes.slice(1);
                     console.log(`🗑️ تم حذف الكوبون المستخدم: ${assignedCode}`);
                     console.log(`📊 الكوبونات المتبقية: ${remainingCodes.length}`);
@@ -836,7 +852,6 @@ const LuckyWheel = () => {
             setSegments(updatedSegments); 
             setTempSegments(updatedSegments);
             
-            // حفظ التحديثات في السحابة فوراً لضمان عدم تكرار الكوبون
             const settingsToSave = {
                 segments: updatedSegments,
                 maxSpins: maxSpins,
@@ -848,13 +863,9 @@ const LuckyWheel = () => {
                 googleScriptUrl: googleScriptUrl
             };
             
-            // حفظ في السحابة (Supabase و Google Sheets)
             saveSettingsToCloud(settingsToSave).then(saved => {
-                if (saved) {
-                    console.log('✅ تم حفظ التحديثات في السحابة - الكوبون لن يظهر مرة أخرى');
-                } else {
-                    console.warn('⚠️ فشل حفظ التحديثات في السحابة');
-                }
+                if (saved) console.log('✅ تم حفظ التحديثات في السحابة');
+                else console.warn('⚠️ فشل حفظ التحديثات في السحابة');
             });
             
             setAiContent({ code: assignedCode, message: assignedMessage });
@@ -863,8 +874,9 @@ const LuckyWheel = () => {
         }
     }
 
-    const visualIndex = segments.findIndex(s => s.id === winningId);
-    const segmentCenterAngle = (visualIndex * segmentSize) + (segmentSize / 2);
+    const spinSegmentSize = currentWheelSegments.length > 0 ? 360 / currentWheelSegments.length : 360;
+    const visualIndex = currentWheelSegments.findIndex(s => s.id === winningId);
+    const segmentCenterAngle = (visualIndex * spinSegmentSize) + (spinSegmentSize / 2);
     const correctionAngle = 360 - segmentCenterAngle;
     const currentMod = rotation % 360;
     const distanceToTarget = (correctionAngle - currentMod + 360) % 360;
@@ -961,8 +973,9 @@ const LuckyWheel = () => {
       } else if (winningSegment.type !== 'prize') {
         console.log('⏭ لم يُرسل (النتيجة: حظ أوفر)');
       }
-      setAvailableIds(prev => prev.filter(id => id !== winningId));
+      // القطاع يبقى متاح — ممكن الفوز بيه تاني
     }, 4500);
+    }, 0);
   };
 
   const resetGame = () => {
@@ -1559,13 +1572,13 @@ const LuckyWheel = () => {
             <div className="w-[340px] h-[340px] md:w-[420px] md:h-[420px] rounded-full bg-gradient-to-b from-yellow-600 to-yellow-800 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-center relative border-4 border-yellow-900">
                <div className="w-[300px] h-[300px] md:w-[380px] md:h-[380px] rounded-full shadow-inner relative overflow-hidden transition-transform duration-[4500ms] cubic-bezier(0.15, 0, 0.15, 1) z-10 bg-white" style={{ transform: `rotate(${rotation}deg)` }}>
                   <svg viewBox="0 0 100 100" className="w-full h-full">
-                    {segments.map((segment, index) => {
+                    {displayWheelSegments.map((segment, index) => {
                       const isUsed = !availableIds.includes(segment.id);
                       const startAngle = index * segmentSize;
                       const endAngle = (index + 1) * segmentSize;
                       return (<g key={segment.id}><path d={describeArc(startAngle, endAngle)} fill={isUsed ? '#cbd5e1' : segment.color} style={{ filter: isUsed ? 'grayscale(100%)' : 'none', opacity: isUsed ? 0.8 : 1, transition: 'fill 0.3s' }} /></g>);
                     })}
-                    {segments.map((segment, index) => {
+                    {displayWheelSegments.map((segment, index) => {
                        const isUsed = !availableIds.includes(segment.id);
                        const midAngle = (index * segmentSize) + (segmentSize / 2);
                        const rad = (midAngle - 90) * (Math.PI / 180);
@@ -1576,7 +1589,7 @@ const LuckyWheel = () => {
                   </svg>
                </div>
                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
-                  <button onClick={spinWheel} disabled={isSpinning || availableIds.length === 0 || remainingSpins <= 0} className={`w-20 h-20 rounded-full flex items-center justify-center shadow-[0_5px_0_rgba(0,0,0,0.2),0_10px_20px_rgba(0,0,0,0.4)] border-[6px] border-white transition-all duration-150 transform active:translate-y-1 active:shadow-none ${availableIds.length === 0 || remainingSpins <= 0 ? 'bg-slate-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 text-white'}`}><span className="font-black text-lg uppercase tracking-wider">{availableIds.length === 0 ? "END" : (remainingSpins <= 0 ? "تم" : "SPIN")}</span></button>
+                  <button onClick={spinWheel} disabled={isSpinning || playableInWheel === 0 || remainingSpins <= 0} className={`w-20 h-20 rounded-full flex items-center justify-center shadow-[0_5px_0_rgba(0,0,0,0.2),0_10px_20px_rgba(0,0,0,0.4)] border-[6px] border-white transition-all duration-150 transform active:translate-y-1 active:shadow-none ${playableInWheel === 0 || remainingSpins <= 0 ? 'bg-slate-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 text-white'}`}><span className="font-black text-lg uppercase tracking-wider">{playableInWheel === 0 ? "END" : (remainingSpins <= 0 ? "تم" : "SPIN")}</span></button>
                </div>
                {[...Array(16)].map((_, i) => {
                   const angleDeg = (i * (360 / 16)); const angleRad = (angleDeg * Math.PI) / 180; const radiusPercent = 47; const left = 50 + radiusPercent * Math.cos(angleRad); const top = 50 + radiusPercent * Math.sin(angleRad);
@@ -1598,13 +1611,13 @@ const LuckyWheel = () => {
               }}
             >
                <svg viewBox="0 0 100 100" className="w-full h-full">
-                 {segments.map((segment, index) => {
+                 {displayWheelSegments.map((segment, index) => {
                    const isUsed = !availableIds.includes(segment.id);
                    const startAngle = index * segmentSize;
                    const endAngle = (index + 1) * segmentSize;
                    return (<g key={segment.id}><path d={describeArc(startAngle, endAngle)} fill={isUsed ? '#cbd5e1' : segment.color} style={{ filter: isUsed ? 'grayscale(100%)' : 'none', opacity: isUsed ? 0.8 : 1, transition: 'fill 0.3s' }} /></g>);
                  })}
-                 {segments.map((segment, index) => {
+                 {displayWheelSegments.map((segment, index) => {
                     const isUsed = !availableIds.includes(segment.id);
                     const midAngle = (index * segmentSize) + (segmentSize / 2);
                     const rad = (midAngle - 90) * (Math.PI / 180);
@@ -1650,7 +1663,7 @@ const LuckyWheel = () => {
 
             {/* Spin Button (Centered relative to the wheel circle) */}
             <div className="absolute z-20 top-[53.3%] left-1/2 -translate-x-1/2 -translate-y-1/2">
-               <button onClick={spinWheel} disabled={isSpinning || availableIds.length === 0 || remainingSpins <= 0} className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-[0_5px_0_rgba(0,0,0,0.2),0_10px_20px_rgba(0,0,0,0.4)] border-[4px] md:border-[6px] border-white transition-all duration-150 transform active:translate-y-1 active:shadow-none ${availableIds.length === 0 || remainingSpins <= 0 ? 'bg-slate-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 text-white'}`}><span className="font-black text-sm md:text-lg uppercase tracking-wider">{availableIds.length === 0 ? "END" : (remainingSpins <= 0 ? "تم" : "SPIN")}</span></button>
+               <button onClick={spinWheel} disabled={isSpinning || playableInWheel === 0 || remainingSpins <= 0} className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-[0_5px_0_rgba(0,0,0,0.2),0_10px_20px_rgba(0,0,0,0.4)] border-[4px] md:border-[6px] border-white transition-all duration-150 transform active:translate-y-1 active:shadow-none ${playableInWheel === 0 || remainingSpins <= 0 ? 'bg-slate-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 text-white'}`}><span className="font-black text-sm md:text-lg uppercase tracking-wider">{playableInWheel === 0 ? "END" : (remainingSpins <= 0 ? "تم" : "SPIN")}</span></button>
             </div>
           </div>
         )}
