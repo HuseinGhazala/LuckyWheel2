@@ -67,8 +67,7 @@ export const saveUserData = async (userData) => {
       .insert({
         name: userData.name,
         email: userData.email,
-        phone: userData.phone,
-        timestamp: new Date().toISOString()
+        phone: userData.phone
       })
 
     if (error) {
@@ -87,22 +86,19 @@ export const saveUserData = async (userData) => {
 export const saveWinData = async (winData) => {
   if (!supabase) return false
   try {
-    const { data, error } = await supabase
-      .from('wins')
-      .insert({
-        name: winData.name,
-        email: winData.email,
-        phone: winData.phone,
-        prize: winData.prize,
-        coupon_code: winData.couponCode,
-        timestamp: new Date().toISOString()
-      })
+    const row = {
+      name: String(winData.name || '').trim() || '—',
+      email: String(winData.email || '').trim() || '—',
+      phone: String(winData.phone || '').trim() || '—',
+      prize: String(winData.prize || '').trim() || '—',
+      coupon_code: winData.couponCode != null ? String(winData.couponCode) : null
+    }
+    const { error } = await supabase.from('wins').insert(row)
 
     if (error) {
       console.error('Error saving win data:', error)
       return false
     }
-
     return true
   } catch (error) {
     console.error('Error in saveWinData:', error)
@@ -117,7 +113,7 @@ export const getAllUserData = async () => {
     const { data, error } = await supabase
       .from('user_data')
       .select('*')
-      .order('timestamp', { ascending: false })
+      .order('created_at', { ascending: false })
 
     if (error) {
       console.error('Error fetching user data:', error)
@@ -138,7 +134,7 @@ export const getAllWins = async () => {
     const { data, error } = await supabase
       .from('wins')
       .select('*')
-      .order('timestamp', { ascending: false })
+      .order('created_at', { ascending: false })
 
     if (error) {
       console.error('Error fetching wins:', error)
