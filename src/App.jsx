@@ -816,13 +816,13 @@ const LuckyWheel = () => {
 
     setTimeout(() => {
     const availableSegments = currentWheelSegments.filter(s => availableIds.includes(s.id));
-    const totalWeight = availableSegments.reduce((sum, item) => sum + (parseInt(item.weight) || 0), 0);
+    const totalWeight = availableSegments.reduce((sum, item) => sum + (parseFloat(item.weight) || 0), 0);
     
     let randomNum = Math.random() * totalWeight;
     let winningSegment = availableSegments[0];
 
     for (const segment of availableSegments) {
-      const weight = parseInt(segment.weight) || 0;
+      const weight = parseFloat(segment.weight) || 0;
       if (randomNum < weight) {
         winningSegment = segment;
         break;
