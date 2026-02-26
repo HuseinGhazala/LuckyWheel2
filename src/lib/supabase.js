@@ -62,7 +62,7 @@ export const saveSettings = async (settings) => {
 export const saveUserData = async (userData) => {
   if (!supabase) return false
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('user_data')
       .insert({
         name: userData.name,
@@ -78,6 +78,29 @@ export const saveUserData = async (userData) => {
     return true
   } catch (error) {
     console.error('Error in saveUserData:', error)
+    return false
+  }
+}
+
+// التحقق هل رقم الجوال مستخدم من قبل
+export const isPhoneAlreadyUsed = async (phone) => {
+  if (!supabase) return false
+  try {
+    const normalized = String(phone || '').replace(/[\s-]/g, '')
+    const { data, error } = await supabase
+      .from('user_data')
+      .select('id')
+      .eq('phone', normalized)
+      .limit(1)
+
+    if (error) {
+      console.error('Error checking phone uniqueness:', error)
+      return false
+    }
+
+    return Array.isArray(data) && data.length > 0
+  } catch (error) {
+    console.error('Error in isPhoneAlreadyUsed:', error)
     return false
   }
 }
