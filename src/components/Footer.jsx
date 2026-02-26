@@ -86,7 +86,7 @@ const Footer = ({ logo, socialLinks, footerSettings }) => {
                              )}
                              {socialLinks?.phone?.trim() && (
                                  <a href={`tel:${socialLinks.phone.trim()}`} className="text-slate-900 hover:text-blue-500 transition-all"><Phone size={22} strokeWidth={2} /></a>
-                             )}
+                             )}  
                         </div>
                     </div>
                     )}
@@ -111,7 +111,7 @@ const Footer = ({ logo, socialLinks, footerSettings }) => {
             <div className="max-w-[1400px] mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-center gap-6 text-xs font-medium text-slate-500">
                 {/* منصة الأعمال - يظهر فقط إذا تم إدخال الرقم من لوحة التحكم */}
                 {businessPlatformId && (
-                <a href={`https://eauthenticate.saudibusiness.gov.sa/certificate-details/${encodeURIComponent(businessPlatformId.trim())}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 w-full md:w-auto justify-center md:justify-end hover:opacity-90 transition-opacity order-1 md:order-1">
+                <a href={`https://eauthenticate.saudibusiness.gov.sa/certificate-details/${encodeURIComponent(businessPlatformId.trim())}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 w-full md:w-auto justify-center md:justify-end hover:opacity-90 transition-opacity order-1 md:order-1">
                   <div className="flex items-center">
                       <svg xmlns="http://www.w3.org/2000/svg" width="33" height="32" viewBox="0 0 33 32" fill="none">
                         <path fillRule="evenodd" clipRule="evenodd" d="M27.8907 19.4494C27.7256 19.752 27.3679 19.8895 27.0378 19.7795C26.405 19.5869 25.7998 19.3943 25.1945 19.2293C24.5893 19.0367 23.9565 18.8716 23.3513 18.7341C22.1132 18.4314 20.8752 18.1288 19.6372 17.9087C19.0595 17.7987 18.6468 17.2484 18.7568 16.6432C18.7843 16.5331 18.8119 16.4231 18.8669 16.3131C19.4721 15.2126 20.1324 14.2222 20.8202 13.2593C21.508 12.2964 22.2508 11.361 23.0486 10.4806C23.3237 10.178 23.7914 10.1505 24.0941 10.4256C24.3417 10.6457 24.3967 11.0308 24.2591 11.306C23.7089 12.3514 23.1312 13.3418 22.5259 14.3597L21.6455 15.8454C21.618 15.9004 21.563 15.9829 21.5355 16.0379C22.3608 16.2305 23.1587 16.4781 23.9565 16.7532C24.5893 16.9733 25.222 17.2209 25.8273 17.496C26.4325 17.7712 27.0653 18.0738 27.6431 18.4039C27.9732 18.6515 28.1107 19.0917 27.8907 19.4494Z" fill="#59529F"/>
