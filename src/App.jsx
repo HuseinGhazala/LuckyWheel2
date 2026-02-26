@@ -994,19 +994,30 @@ const LuckyWheel = () => {
     console.log('🔄 تم إعادة تعيين اللعبة - الكوبونات المستخدمة تبقى محذوفة');
   };
 
-  const handleCopy = (text) => {
+  const handleCopy = async (text) => {
+    if (!text) return;
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        return;
+      }
+    } catch (_) {}
     const textArea = document.createElement("textarea");
     textArea.value = text;
-    textArea.style.position = "fixed";
-    textArea.style.left = "-9999px";
+    textArea.setAttribute('readonly', '');
+    textArea.style.cssText = 'position:fixed;top:0;left:0;width:2em;height:2em;padding:0;border:none;outline:none;boxShadow:none;background:transparent;opacity:0;';
     document.body.appendChild(textArea);
+    textArea.focus();
     textArea.select();
+    textArea.setSelectionRange(0, text.length);
     try {
-      if(document.execCommand('copy')) {
+      if (document.execCommand('copy')) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }
-    } catch (err) {}
+    } catch (_) {}
     document.body.removeChild(textArea);
   };
 
