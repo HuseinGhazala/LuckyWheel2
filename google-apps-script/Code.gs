@@ -125,7 +125,7 @@ function saveSettings(ss, settingsJson) {
   sheet.getRange("A2").setValue(settingsJson);
   sheet.getRange("B2").setValue(new Date()); 
   return { success: true };
-}
+} 
 
 function saveUserData(ss, params) {
   let sheet = ss.getSheetByName(SHEET_USER_DATA);
