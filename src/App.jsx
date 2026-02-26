@@ -1236,7 +1236,7 @@ const LuckyWheel = () => {
 
   const handleUnlockDashboard = (e) => {
       e.preventDefault();
-      if (dashboardPassword === 'admin') {
+      if (dashboardPassword === 'Khyma@toys2026') {
           setIsDashboardUnlocked(true);
       } else {
           Toast.fire({ icon: 'error', title: 'خطأ', text: 'كلمة المرور غير صحيحة', confirmButtonText: 'حسناً' });
