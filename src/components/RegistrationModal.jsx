@@ -56,6 +56,16 @@ export default function RegistrationModal({
               className="w-full pr-10 pl-4 py-3 rounded-xl border-2 border-slate-200 focus:border-yellow-400 focus:ring-0 outline-none transition-all bg-slate-50"
               value={userData.email}
               onChange={(e) => onUserDataChange({ ...userData, email: e.target.value })}
+              onInput={(e) => {
+                const value = e.target.value.trim();
+                // regex بسيط: لازم يكون بالشكل name@example.com
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!value || emailRegex.test(value)) {
+                  e.target.setCustomValidity('');
+                } else {
+                  e.target.setCustomValidity('يرجى إدخال بريد إلكتروني كامل مثل name@example.com');
+                }
+              }}
               disabled={isSubmitting}
             />
           </div>
