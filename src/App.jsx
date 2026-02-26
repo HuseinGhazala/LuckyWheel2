@@ -16,7 +16,7 @@ import {
   FaGlobe
 } from 'react-icons/fa6';
 import { FaSnapchatGhost } from 'react-icons/fa';
-import { getSettings as getSupabaseSettings, saveSettings as saveSupabaseSettings, saveUserData as saveSupabaseUserData, saveWinData as saveSupabaseWinData } from './lib/supabase';
+import { getSettings as getSupabaseSettings, saveSettings as saveSupabaseSettings, saveUserData as saveSupabaseUserData, saveWinData as saveSupabaseWinData, isPhoneAlreadyUsed } from './lib/supabase';
 import ConfettiEffect from './components/ConfettiEffect.jsx';
 import Footer from './components/Footer.jsx';
 import RegistrationModal from './components/RegistrationModal.jsx';
@@ -1094,6 +1094,32 @@ const LuckyWheel = () => {
     // تحديث رقم الهاتف بالقيمة الصحيحة
     setUserData({...userData, phone: finalPhone});
     
+    // منع استخدام نفس رقم الجوال أكثر من مرة
+    try {
+        const useSupabaseForPhoneCheck = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_URL !== 'YOUR_SUPABASE_URL';
+
+        if (useSupabaseForPhoneCheck) {
+            const exists = await isPhoneAlreadyUsed(finalPhone);
+            if (exists) {
+                setPhoneError('هذا الرقم استخدم من قبل ولا يمكن التسجيل به مرة أخرى.');
+                return;
+            }
+        } else {
+            // فحص محلي على مستوى المتصفح فقط في حال عدم وجود Supabase
+            try {
+                const stored = JSON.parse(localStorage.getItem('luckyWheel_usedPhones') || '[]');
+                if (Array.isArray(stored) && stored.includes(finalPhone)) {
+                    setPhoneError('هذا الرقم استخدم من قبل على هذا الجهاز ولا يمكن التسجيل به مرة أخرى.');
+                    return;
+                }
+            } catch (err) {
+                console.warn('Failed to read used phones from localStorage', err);
+            }
+        }
+    } catch (err) {
+        console.warn('Phone uniqueness check failed, allowing registration as fallback.', err);
+    }
+    
     if (userData.name && userData.email && finalPhone) {
         setIsSubmitting(true);
         try {
@@ -1162,7 +1188,22 @@ const LuckyWheel = () => {
             } else {
                 console.warn('⚠️ رابط Google Script غير محدد أو غير صحيح');
             }
-            
+
+            // حفظ رقم الجوال في localStorage لمنع تكراره على نفس الجهاز (في حال عدم وجود فحص من السيرفر)
+            try {
+                const stored = JSON.parse(localStorage.getItem('luckyWheel_usedPhones') || '[]');
+                if (Array.isArray(stored)) {
+                    if (!stored.includes(finalPhone)) {
+                        stored.push(finalPhone);
+                        localStorage.setItem('luckyWheel_usedPhones', JSON.stringify(stored));
+                    }
+                } else {
+                    localStorage.setItem('luckyWheel_usedPhones', JSON.stringify([finalPhone]));
+                }
+            } catch (err) {
+                console.warn('Failed to save used phone to localStorage', err);
+            }
+
             setIsRegistered(true);
             setShowRegistrationModal(false); 
             setTimeout(() => { spinWheel(true); }, 500);
